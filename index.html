@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big Five Personality Inventory</title>
+<meta name="description" content="A 30-statement Big Five personality inventory with facet scores and research-based insights on how your traits combine.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 26 C9 26 11 6 16 6 S23 26 30 26 Z' fill='%233B6FB6'/%3E%3Ccircle cx='19' cy='10' r='3.5' fill='%231B2333'/%3E%3C/svg%3E">
+<!--
+=====================================================================
+  INSTRUCTOR NOTES
+=====================================================================
+  WHAT THIS IS
+  A single, self-contained HTML file. No server, database, tracking,
+  or external files. Students' answers never leave their browser tab
+  unless they choose "Download results (CSV)" or print the page.
+
+  HOSTING ON GITHUB PAGES
+  1. Create a public repository and upload this file as index.html.
+  2. Settings > Pages > Build and deployment > Source: "Deploy from a
+     branch", Branch: main, folder: / (root). Save.
+  3. After a minute the quiz is live at
+     https://<your-username>.github.io/<repository-name>/
+
+  PREVIEW THE RESULTS PAGE
+  Add #demo to the end of the URL to see results for random answers.
+
+  COLLECTING RESULTS
+  Students can print / save as PDF, or download a one-row CSV
+  (scores, percentiles, and raw item responses) to submit. The CSVs
+  share the same columns, so they can be stacked into one spreadsheet.
+
+  CUSTOMIZING (all in the <script> block near the bottom)
+  - CONFIG.course   : course name shown in the header and printouts.
+  - NORMS           : the means and SDs used to turn scores into
+                      percentiles. The defaults are approximations of
+                      typical adult online samples. Once you have class
+                      data you can replace them with your own.
+  - ITEMS           : the 30 statements. Each has a facet code and a
+                      key (1 = scored as written, -1 = reverse-scored).
+                      You can swap in items from another instrument,
+                      such as the BFI-2-S, as long as you keep the facet
+                      codes and give each facet the same number of items.
+
+  ITEM SOURCE
+  Statements come from the International Personality Item Pool
+  (ipip.ori.org), which is in the public domain, lightly edited to
+  read as full sentences and arranged to mirror the 15-facet structure
+  of the BFI-2 (Soto & John, 2017).
+=====================================================================
+-->
+<style>
+:root{
+  --paper:#F4F5F2; --surface:#FFFFFF; --ink:#1B2333; --muted:#596274;
+  --rule:#DADDD5; --rule-strong:#B4B9AF; --focus:#2F5FD0;
+  --O:#7A4FD0; --O-ink:#5A36AC; --O-soft:#ECE5FA;
+  --C:#12846D; --C-ink:#0B6453; --C-soft:#DDF0EA;
+  --E:#E0950A; --E-ink:#8A5A00; --E-soft:#FBF0D8;
+  --A:#D24A70; --A-ink:#A42F53; --A-soft:#F9E3EA;
+  --N:#3B6FB6; --N-ink:#2A5592; --N-soft:#E1EAF6;
+  --serif:"Iowan Old Style","Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --r-sm:6px; --r:12px;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#131923; --surface:#1B2330; --ink:#E7EAF0; --muted:#A2ABBA;
+    --rule:#2C3545; --rule-strong:#475265; --focus:#8DB4EA;
+    --O:#9673E6; --O-ink:#C2AEF5; --O-soft:#2A2442;
+    --C:#24A285; --C-ink:#7DD6C0; --C-soft:#16332D;
+    --E:#E5A426; --E-ink:#F3C76E; --E-soft:#372C15;
+    --A:#E0668A; --A-ink:#F59AB5; --A-soft:#3B212D;
+    --N:#5A8BD0; --N-ink:#98BBEC; --N-soft:#1B2B42;
+  }
+}
+.t-O{--c:var(--O);--c-ink:var(--O-ink);--c-soft:var(--O-soft)}
+.t-C{--c:var(--C);--c-ink:var(--C-ink);--c-soft:var(--C-soft)}
+.t-E{--c:var(--E);--c-ink:var(--E-ink);--c-soft:var(--E-soft)}
+.t-A{--c:var(--A);--c-ink:var(--A-ink);--c-soft:var(--A-soft)}
+.t-N{--c:var(--N);--c-ink:var(--N-ink);--c-soft:var(--N-soft)}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;margin:0}
+p{margin:0 0 1em}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:4px}
+[tabindex="-1"]:focus{outline:none}
+[hidden]{display:none !important}
+.wrap{max-width:800px;margin:0 auto;padding:0 22px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Masthead */
+.stripe{display:flex;height:5px}
+.stripe span{flex:1;background:var(--c)}
+.masthead .wrap{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-top:14px;padding-bottom:14px;border-bottom:1px solid var(--rule)}
+.brand{font-family:var(--serif);font-weight:600;font-size:1.05rem;text-decoration:none}
+.course{color:var(--muted);font-size:.9rem;text-align:right}
+
+/* Buttons */
+.btn{font:inherit;font-weight:650;font-size:1rem;cursor:pointer;border-radius:999px;padding:12px 24px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper)}
+.btn.secondary{background:transparent;color:var(--ink)}
+@media (hover:hover){.btn:hover{filter:brightness(1.15)}.btn.secondary:hover{background:var(--surface);filter:none}}
+.link-btn{font:inherit;background:none;border:0;padding:4px 0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link-btn:hover{color:var(--ink)}
+
+/* Intro */
+.intro{padding:52px 0 72px}
+.intro h1{font-size:clamp(2.1rem,5.4vw,3.3rem);letter-spacing:-.01em;max-width:17ch;margin-bottom:.45em}
+.lead{font-size:1.18rem;line-height:1.55;max-width:58ch}
+.hero-curve{margin:36px 0 8px;max-width:640px}
+.hero-curve svg{display:block;width:100%;height:auto}
+.hero-curve .h-area{fill:var(--surface);stroke:var(--rule-strong);stroke-width:1.5}
+.hero-curve .h-base{stroke:var(--rule-strong);stroke-width:1.5}
+.hero-curve .h-dot{fill:var(--c);stroke:var(--paper);stroke-width:3}
+.trait-list{list-style:none;padding:0;margin:0 0 40px;display:flex;flex-wrap:wrap;gap:6px 22px;max-width:640px}
+.trait-list li{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.98rem}
+.trait-list li::before{content:"";width:11px;height:11px;border-radius:50%;background:var(--c)}
+.before{max-width:60ch;margin:0 0 28px}
+.before h2{font-size:1.3rem;margin-bottom:.5em}
+.before ul{margin:0;padding-left:1.2em}
+.before li{margin-bottom:.35em}
+.field{margin:0 0 28px;max-width:360px}
+.field label{display:block;font-weight:600;margin-bottom:6px}
+.field .hint{display:block;font-weight:400;color:var(--muted);font-size:.9rem}
+.field input{font:inherit;width:100%;padding:10px 12px;border:1.5px solid var(--rule-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--ink)}
+.field input:focus-visible{outline-offset:1px}
+.fine{color:var(--muted);font-size:.9rem;max-width:60ch;margin-top:22px}
+
+/* Quiz */
+.quiz{padding:36px 0 80px;min-height:72vh}
+.progress{height:6px;background:var(--rule);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--ink);transition:width .3s ease}
+.q-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;margin:10px 0 56px;font-variant-numeric:tabular-nums}
+.q-stem{color:var(--muted);margin:0 0 .4em}
+.q-text{font-size:clamp(1.75rem,4.4vw,2.6rem);font-weight:500;letter-spacing:-.01em;min-height:2.5em;margin:0 0 36px;outline:none}
+.q-text.enter{animation:qin .28s ease-out}
+@keyframes qin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.opt{font:inherit;font-size:.92rem;line-height:1.25;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;text-align:center;min-height:96px;padding:14px 8px 12px;background:var(--surface);color:var(--ink);border:1.5px solid var(--rule-strong);border-radius:var(--r)}
+@media (hover:hover){.opt:hover{border-color:var(--ink)}}
+.opt .num{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--rule-strong);font-weight:700;font-size:.85rem;font-variant-numeric:tabular-nums}
+.opt[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.opt[aria-pressed="true"] .num{border-color:var(--paper)}
+.q-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
+.kbd-hint{color:var(--muted);font-size:.88rem}
+@media (max-width:620px){
+  .q-meta{margin-bottom:32px}
+  .scale{grid-template-columns:1fr}
+  .opt{flex-direction:row;min-height:0;padding:12px 14px;text-align:left;font-size:1rem;gap:12px}
+  .kbd-hint{display:none}
+}
+
+/* Results: shared */
+.results{padding:44px 0 88px}
+.res-head h1{font-size:clamp(2rem,5vw,2.9rem);letter-spacing:-.01em}
+.res-meta{color:var(--muted);margin:.4em 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0}
+.actions .btn{padding:9px 18px;font-size:.95rem}
+.summary{font-family:var(--serif);font-size:1.32rem;line-height:1.5;margin:34px 0 0;max-width:60ch}
+.warn{margin:24px 0 0;padding:14px 18px;background:var(--E-soft);border-left:4px solid var(--E);border-radius:0 var(--r-sm) var(--r-sm) 0;max-width:64ch}
+.warn p{margin:0}
+.section{margin-top:72px}
+.section > h2{font-size:clamp(1.55rem,3.6vw,1.95rem);margin-bottom:.4em}
+.section-lead{color:var(--muted);max-width:62ch}
+.research{font-size:.92rem;color:var(--muted);border-left:2px solid var(--rule-strong);padding-left:12px;margin:12px 0 0;max-width:64ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.chip{font-size:.82rem;font-weight:650;padding:2px 10px;border-radius:999px;background:var(--c-soft);color:var(--c-ink)}
+
+/* Overview curves */
+.overview{margin-top:26px;border-top:1px solid var(--rule)}
+.ov-row{display:grid;grid-template-columns:190px 1fr 92px;gap:8px 20px;align-items:center;padding:14px 0 12px;border-bottom:1px solid var(--rule)}
+.ov-name{font-family:var(--serif);font-weight:600;font-size:1.2rem;color:var(--c-ink);text-decoration:none}
+.ov-name:hover{text-decoration:underline;text-underline-offset:3px}
+.ov-level{display:block;color:var(--muted);font-size:.9rem}
+.ov-pct{text-align:right}
+.pct-num{font-family:var(--serif);font-size:2.1rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pct-num .ord{font-size:.45em;vertical-align:.95em;margin-left:1px}
+.pct-suf{display:block;color:var(--muted);font-size:.78rem;margin-top:3px}
+.poles{display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem;margin-top:2px}
+.curve{display:block;width:100%;height:auto;overflow:visible}
+.c-area{fill:var(--c-soft)}
+.c-shade{fill:var(--c);opacity:.6}
+.c-line{fill:none;stroke:var(--c-ink);stroke-width:1.6}
+.c-mid{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4;opacity:.7}
+.c-base{stroke:var(--rule-strong);stroke-width:1.5}
+.c-mark{stroke:var(--ink);stroke-width:2}
+.c-dot{fill:var(--surface);stroke:var(--ink);stroke-width:3}
+.ov-row .c-shade{animation:sweep 1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sweep{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.curve-key{color:var(--muted);font-size:.88rem;margin:12px 0 0}
+@media (max-width:640px){
+  .ov-row{grid-template-columns:1fr auto}
+  .ov-chart{grid-column:1 / -1;grid-row:2}
+  .ov-pct{grid-column:2;grid-row:1}
+}
+
+/* Trait detail */
+.trait{margin-top:28px;padding:30px 30px 26px;background:var(--surface);border-radius:var(--r);border-top:6px solid var(--c)}
+.trait-head h3{font-size:clamp(1.6rem,4vw,2rem);color:var(--c-ink)}
+.trait-head .alt{font-weight:400;color:var(--muted);font-size:.6em;margin-left:.3em}
+.trait-score{margin:.35em 0 1.1em;color:var(--muted)}
+.trait-score strong{color:var(--ink)}
+.trait-what{color:var(--muted);font-size:.96rem}
+.trait-you{font-family:var(--serif);font-size:1.16rem;line-height:1.55}
+.facets{margin:26px 0 0}
+.facets h4{font-size:1.1rem;margin-bottom:6px}
+.facet{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:14px 0 12px;border-top:1px solid var(--rule)}
+.facet-name{font-weight:650}
+.facet-def{display:block;color:var(--muted);font-size:.9rem;font-weight:400}
+.facet-pct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.facet-pct small{display:block;font-weight:400;color:var(--muted);font-size:.78rem}
+.track{grid-column:1 / -1;position:relative;height:10px;margin:8px 0 6px;background:var(--c-soft);border-radius:5px}
+.track-fill{position:absolute;left:0;top:0;bottom:0;background:var(--c);opacity:.75;border-radius:5px}
+.track-mid{position:absolute;left:50%;top:-4px;bottom:-4px;width:1.5px;background:var(--rule-strong)}
+.track-dot{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--surface);border:3px solid var(--ink)}
+.facet-says{grid-column:1 / -1;margin:0;font-size:.95rem}
+.facet-note{margin:14px 0 0;padding:12px 16px;background:var(--c-soft);border-radius:var(--r-sm);font-size:.95rem}
+.college{margin:22px 0 0}
+
+/* Combinations */
+.combo{display:grid;grid-template-columns:150px 1fr;gap:22px;padding:26px 0;border-top:1px solid var(--rule)}
+.combo:first-of-type{margin-top:18px}
+.combo h3{font-size:1.4rem}
+.combo-kind{color:var(--muted);font-size:.9rem;margin:2px 0 .6em}
+.quad{display:block;width:150px;height:150px}
+.q-frame{fill:var(--surface);stroke:var(--rule-strong);stroke-width:1}
+.q-axis{stroke:var(--rule-strong);stroke-width:1}
+.q-hit{fill:var(--rule);opacity:.9}
+.q-dot{fill:var(--ink)}
+.q-lab{font-family:var(--sans);font-size:10px;fill:var(--c-ink);font-weight:650}
+.allpairs{margin-top:10px;border-top:1px solid var(--rule)}
+.allpairs summary{cursor:pointer;font-weight:650;padding:16px 0}
+.pair-row{padding:14px 0;border-top:1px solid var(--rule)}
+.pair-row h4{font-size:1.08rem;margin:2px 0 4px}
+.pair-row p{margin:0;font-size:.95rem}
+.tilt{color:var(--muted);font-size:.85rem;font-weight:400;font-family:var(--sans)}
+.empty{padding:18px 20px;background:var(--surface);border-radius:var(--r-sm);margin-top:18px;max-width:64ch}
+@media (max-width:560px){
+  .combo{grid-template-columns:1fr;gap:12px}
+  .quad{width:132px;height:132px}
+}
+
+/* Spotlights */
+.spot{margin-top:20px;padding:26px 28px;background:var(--surface);border-radius:var(--r)}
+.spot h3{font-size:1.4rem;margin-bottom:.4em}
+.spot .tip{margin:14px 0 0}
+
+/* Types */
+.types{margin-top:20px}
+.type-row{padding:20px 0;border-top:1px solid var(--rule)}
+.type-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.type-head h3{font-size:1.3rem}
+.type-tag{font-size:.88rem;color:var(--muted)}
+.type-row.closest .type-tag{color:var(--ink);font-weight:650}
+.meter{height:8px;background:var(--rule);border-radius:4px;margin:10px 0 12px;max-width:420px;overflow:hidden}
+.meter-fill{height:100%;background:var(--ink);border-radius:4px}
+.type-row p{margin:0;max-width:64ch}
+
+/* Caveats & references */
+.caveats p{max-width:64ch}
+.refs{font-size:.88rem;color:var(--muted);padding-left:0;list-style:none}
+.refs li{padding-left:1.6em;text-indent:-1.6em;margin-bottom:.45em}
+.site-foot{margin-top:72px;padding:22px 0 40px;border-top:1px solid var(--rule);color:var(--muted);font-size:.88rem}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+
+@media print{
+  :root{
+    --paper:#FFFFFF; --surface:#FFFFFF; --ink:#111827; --muted:#4B5563; --rule:#D1D5DB; --rule-strong:#9CA3AF;
+    --O:#7A4FD0; --O-ink:#5A36AC; --O-soft:#ECE5FA; --C:#12846D; --C-ink:#0B6453; --C-soft:#DDF0EA;
+    --E:#E0950A; --E-ink:#8A5A00; --E-soft:#FBF0D8; --A:#D24A70; --A-ink:#A42F53; --A-soft:#F9E3EA;
+    --N:#3B6FB6; --N-ink:#2A5592; --N-soft:#E1EAF6;
+  }
+  body{font-size:10.5pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .no-print,.actions{display:none !important}
+  .results{padding-top:8px}
+  .section{margin-top:28px}
+  .trait,.spot{padding:16px 18px;border:1px solid var(--rule)}
+  .trait,.spot,.combo,.type-row,.pair-row,.ov-row,.facet{break-inside:avoid}
+  .ov-row .c-shade{animation:none}
+  a{text-decoration:none}
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="stripe" aria-hidden="true"><span class="t-O"></span><span class="t-C"></span><span class="t-E"></span><span class="t-A"></span><span class="t-N"></span></div>
+  <div class="wrap">
+    <a class="brand" href="#" id="brand">Big Five Personality Inventory</a>
+    <span class="course" id="course"></span>
+  </div>
+</header>
+
+<noscript><div class="wrap" style="padding:40px 22px">This inventory needs JavaScript to run. Please enable it in your browser and reload the page.</div></noscript>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="intro" id="intro" aria-labelledby="intro-title">
+    <h1 id="intro-title">Where do you fall on the five big traits of personality?</h1>
+    <p class="lead">Psychologists describe personality with five broad traits, each made up of narrower facets. Rate 30 statements about yourself to see where you land on all five, what&rsquo;s happening in the facets underneath, and what research says about your particular combination of traits.</p>
+
+    <div class="hero-curve" id="hero-curve" aria-hidden="true"></div>
+    <ul class="trait-list" aria-label="The five traits">
+      <li class="t-O">Openness</li>
+      <li class="t-C">Conscientiousness</li>
+      <li class="t-E">Extraversion</li>
+      <li class="t-A">Agreeableness</li>
+      <li class="t-N">Neuroticism</li>
+    </ul>
+
+    <div class="before">
+      <h2>Before you start</h2>
+      <ul>
+        <li>Describe yourself as you generally are now, not as you wish to be or as you are on an unusual day.</li>
+        <li>There are no right or wrong answers, and no trait is better than another. Every trait has advantages in some situations and costs in others.</li>
+        <li>Go with your first reaction. It takes about five minutes.</li>
+      </ul>
+    </div>
+
+    <div class="field">
+      <label for="name">Your name <span class="hint">Optional. It appears only on your printout or download.</span></label>
+      <input id="name" type="text" autocomplete="given-name" maxlength="60">
+    </div>
+
+    <button class="btn" id="start" type="button">Start the inventory</button>
+
+    <p class="fine">Your answers stay in this browser tab. Nothing is sent or stored anywhere unless you download or print your results. This is a tool for learning about personality psychology and reflecting on yourself, not a clinical or diagnostic assessment.</p>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="quiz" id="quiz" hidden aria-label="Inventory questions">
+    <div class="progress" id="progress" role="progressbar" aria-label="Statements answered" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="q-meta"><span id="q-count">Statement 1 of 30</span><span id="q-left"></span></div>
+    <p class="q-stem" id="q-stem">How well does this statement describe you?</p>
+    <h2 class="q-text" id="q-text" tabindex="-1"></h2>
+    <div class="scale" role="group" aria-labelledby="q-stem q-text" id="scale"></div>
+    <div class="q-nav">
+      <button class="link-btn" id="back" type="button">Back to instructions</button>
+      <span class="kbd-hint">You can also press 1&ndash;5 on your keyboard.</span>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="results" id="results" hidden aria-labelledby="res-title"></section>
+
+</main>
+<script>
+(function(){
+"use strict";
+
+/* =================================================================
+   CONFIGURATION — instructors can edit this block
+   ================================================================= */
+const CONFIG = {
+  course: ""   // e.g. "PSY 101, Fall 2026". Shown in the header and on printouts.
+};
+
+/* Response scale (1–5) */
+const SCALE = [
+  "Disagree strongly",
+  "Disagree a little",
+  "Neither agree nor disagree",
+  "Agree a little",
+  "Agree strongly"
+];
+
+/* =================================================================
+   ITEMS — 30 statements, 2 per facet, one scored as written (key 1)
+   and one reverse-scored (key -1). Order cycles through the five
+   traits. Source: International Personality Item Pool (public domain).
+   ================================================================= */
+const ITEMS = [
+  { text: "I talk to a lot of different people at parties.",           facet: "soc", key:  1 },
+  { text: "I feel sympathy for people who are worse off than I am.",   facet: "com", key:  1 },
+  { text: "I leave my belongings around.",                             facet: "org", key: -1 },
+  { text: "I worry about things.",                                     facet: "anx", key:  1 },
+  { text: "I believe in the importance of art.",                       facet: "aes", key:  1 },
+  { text: "I wait for others to lead the way.",                        facet: "ass", key: -1 },
+  { text: "I insult people.",                                          facet: "res", key: -1 },
+  { text: "I get chores done right away.",                             facet: "pro", key:  1 },
+  { text: "I feel comfortable with myself.",                           facet: "dep", key: -1 },
+  { text: "I love to read challenging material.",                      facet: "int", key:  1 },
+  { text: "I am always on the go.",                                    facet: "ene", key:  1 },
+  { text: "I believe that others have good intentions.",               facet: "tru", key:  1 },
+  { text: "I shirk my duties.",                                        facet: "rsp", key: -1 },
+  { text: "I have frequent mood swings.",                              facet: "vol", key:  1 },
+  { text: "I do not have a good imagination.",                         facet: "cre", key: -1 },
+  { text: "I prefer to be alone.",                                     facet: "soc", key: -1 },
+  { text: "I am not interested in other people's problems.",           facet: "com", key: -1 },
+  { text: "I like order.",                                             facet: "org", key:  1 },
+  { text: "I am relaxed most of the time.",                            facet: "anx", key: -1 },
+  { text: "I do not enjoy going to art museums.",                      facet: "aes", key: -1 },
+  { text: "I take charge.",                                            facet: "ass", key:  1 },
+  { text: "I respect others.",                                         facet: "res", key:  1 },
+  { text: "I find it difficult to get down to work.",                  facet: "pro", key: -1 },
+  { text: "I often feel blue.",                                        facet: "dep", key:  1 },
+  { text: "I avoid philosophical discussions.",                        facet: "int", key: -1 },
+  { text: "I like to take it easy.",                                   facet: "ene", key: -1 },
+  { text: "I suspect hidden motives in others.",                       facet: "tru", key: -1 },
+  { text: "I keep my promises.",                                       facet: "rsp", key:  1 },
+  { text: "I rarely get irritated.",                                   facet: "vol", key: -1 },
+  { text: "I have a vivid imagination.",                               facet: "cre", key:  1 }
+];
+
+/* =================================================================
+   NORMS — mean and SD on the 1–5 scale, used to estimate percentiles.
+   These are approximations of typical adult online samples. Replace
+   them with your own class means/SDs if you collect data.
+   ================================================================= */
+const NORMS = {
+  domains: {
+    O: { m: 3.60, sd: 0.70 }, C: { m: 3.52, sd: 0.70 }, E: { m: 3.22, sd: 0.78 },
+    A: { m: 3.83, sd: 0.58 }, N: { m: 2.88, sd: 0.82 }
+  },
+  facets: {
+    int: { m: 3.60, sd: 0.95 }, aes: { m: 3.35, sd: 1.05 }, cre: { m: 3.85, sd: 0.90 },
+    org: { m: 3.45, sd: 1.00 }, pro: { m: 3.20, sd: 0.95 }, rsp: { m: 3.90, sd: 0.75 },
+    soc: { m: 3.15, sd: 1.05 }, ass: { m: 3.20, sd: 0.95 }, ene: { m: 3.30, sd: 0.90 },
+    com: { m: 3.95, sd: 0.80 }, res: { m: 4.10, sd: 0.75 }, tru: { m: 3.45, sd: 0.85 },
+    anx: { m: 3.35, sd: 1.00 }, dep: { m: 2.55, sd: 0.95 }, vol: { m: 2.75, sd: 1.00 }
+  }
+};
+
+/* =================================================================
+   TRAITS
+   ================================================================= */
+const TRAIT_ORDER = ["O", "C", "E", "A", "N"];
+
+const TRAITS = {
+  O: {
+    name: "Openness", alt: "to Experience", poles: ["Practical", "Curious"],
+    facets: ["int", "aes", "cre"],
+    what: "Openness describes how receptive you are to new ideas, experiences, art, and imagination. It is the trait most tied to intellectual and creative engagement.",
+    high: "You're curious and imaginative, drawn to abstract ideas, art, and unfamiliar experiences. You probably enjoy questions without easy answers and get restless with too much routine.",
+    mid:  "You're open to new ideas and experiences when they connect to something you care about, and you also appreciate the familiar and the practical.",
+    low:  "You're practical and down-to-earth, preferring the concrete and familiar to the abstract or experimental. You tend to trust proven approaches and focus on what's useful.",
+    college: {
+      high: "Take advantage of electives, discussion-heavy seminars, and research opportunities. Curiosity can scatter your focus, so choose a few interests to go deep on.",
+      mid:  "Look for courses that bridge theory and application. You'll engage most when new ideas connect to something concrete.",
+      low:  "You may prefer courses with a clear practical payoff. Connecting general-education requirements to your own goals can make them feel more worthwhile."
+    },
+    research: "Openness is the Big Five trait most closely linked to creativity (Feist, 1998) and, on average, to more liberal social and political attitudes (Carney et al., 2008)."
+  },
+  C: {
+    name: "Conscientiousness", alt: "", poles: ["Spontaneous", "Disciplined"],
+    facets: ["org", "pro", "rsp"],
+    what: "Conscientiousness describes self-control in the service of goals: being organized, persistent, and reliable.",
+    high: "You're organized, plan ahead, and follow through. You likely set goals and work steadily toward them, and others see you as dependable.",
+    mid:  "You're organized and reliable when it matters, but you don't need everything planned out and can adapt when plans change.",
+    low:  "You're flexible and spontaneous, preferring to keep options open rather than follow a strict plan. Routines and deadlines may feel confining, and follow-through can take deliberate effort.",
+    college: {
+      high: "Your habits are a real asset in college. Leave room for rest, and for the unplanned experiences that make first year memorable.",
+      mid:  "A simple weekly planning routine will help you stay consistent when several deadlines land at once.",
+      low:  "College gives you far more unstructured time than high school did. External structure helps most: a planner, fixed study blocks, study partners, and breaking big assignments into small deadlines."
+    },
+    research: "Conscientiousness is the Big Five trait most consistently linked to college grades (Poropat, 2009) and to healthier habits and longer life (Bogg & Roberts, 2004)."
+  },
+  E: {
+    name: "Extraversion", alt: "", poles: ["Reserved", "Outgoing"],
+    facets: ["soc", "ass", "ene"],
+    what: "Extraversion describes how much you seek out social interaction, attention, and stimulation, and how energized you feel by them.",
+    high: "You're talkative, socially confident, and energized by being around people. You likely find it easy to start conversations and speak up in groups, and you may get restless when things are too quiet.",
+    mid:  "You enjoy social time and also value time to yourself. You can be outgoing in the right setting and reserved in others.",
+    low:  "You're quieter and more reserved, preferring smaller groups or solitude and recharging on your own. Introversion isn't the same as shyness or social anxiety (those relate more to Neuroticism); it's mainly a lower appetite for social stimulation.",
+    college: {
+      high: "Clubs, study groups, and campus events will likely energize you. Make sure a full social calendar doesn't crowd out study time.",
+      mid:  "Notice which settings leave you energized and which leave you drained, and plan your week with both in mind.",
+      low:  "One or two close connections can be a perfectly good foundation for campus life. Small-group settings like labs, office hours, or a single club tend to suit you."
+    },
+    research: "Extraversion is the strongest Big Five predictor of who emerges as a leader in groups (Judge et al., 2002) and is consistently linked to positive emotion (Steel et al., 2008)."
+  },
+  A: {
+    name: "Agreeableness", alt: "", poles: ["Skeptical", "Cooperative"],
+    facets: ["com", "res", "tru"],
+    what: "Agreeableness describes how you tend to treat other people: warmth, courtesy, and trust versus skepticism, bluntness, and competitiveness.",
+    high: "You're warm, considerate, and quick to give people the benefit of the doubt. You prefer cooperation to conflict, though you may sometimes avoid disagreements that need to happen.",
+    mid:  "You're generally considerate and cooperative, but you can stand your ground, and you don't automatically trust everyone.",
+    low:  "You're skeptical, candid, and comfortable with conflict. You're less swayed by others' feelings, which can make you a strong critic, negotiator, or advocate, and sometimes a prickly collaborator.",
+    college: {
+      high: "You'll likely be a valued group-project partner. Practice voicing disagreement early; it prevents bigger problems later.",
+      mid:  "You can cooperate easily and still hold your ground, a useful balance for group work and roommate negotiations.",
+      low:  "Your willingness to question and critique is an asset in discussions and peer review. In group work, pairing candor with a word of appreciation goes a long way."
+    },
+    research: "Agreeableness is linked to better relationship quality and more helping behavior (Ozer & Benet-Martínez, 2006), and on average it rises gradually across adulthood (Roberts et al., 2006)."
+  },
+  N: {
+    name: "Neuroticism", alt: "(Negative Emotionality)", poles: ["Even-keeled", "Sensitive"],
+    facets: ["anx", "dep", "vol"],
+    what: "Neuroticism, also called Negative Emotionality, describes how often and how intensely you experience negative emotions such as worry, sadness, and irritation, especially under stress. A high score is a trait tendency, not a diagnosis.",
+    high: "You feel stress, worry, and mood shifts more intensely than most people, and you're quick to notice what might go wrong. That vigilance can be useful, but it can also be exhausting.",
+    mid:  "You experience stress and negative emotions at typical levels: affected by setbacks, but usually able to recover.",
+    low:  "You're emotionally steady and resilient under pressure. You rarely feel overwhelmed, and setbacks tend not to linger.",
+    college: {
+      high: "Transitions like starting college can feel especially stressful. Sleep, exercise, social connection, and concrete coping plans make a real difference, and campus counseling services exist for exactly this.",
+      mid:  "Learn your early warning signs of stress, such as slipping sleep or irritability, so you can respond before it builds.",
+      low:  "You likely handle pressure well, and your calm can steady others. Double-check that you aren't underestimating deadlines or risks because nothing feels alarming."
+    },
+    research: "Neuroticism is among the strongest personality predictors of well-being (Steel et al., 2008) and a risk factor for anxiety and depression (Kotov et al., 2010). On average it declines through young adulthood (Roberts et al., 2006)."
+  }
+};
+
+/* =================================================================
+   FACETS
+   ================================================================= */
+const FACETS = {
+  int: { trait: "O", name: "Intellectual Curiosity", def: "Interest in ideas, theories, and complex problems.",
+         high: "You enjoy wrestling with ideas and challenging material.", low: "You prefer practical, concrete topics to abstract ones." },
+  aes: { trait: "O", name: "Aesthetic Sensitivity", def: "Appreciation of art, music, writing, and beauty.",
+         high: "Art and beauty matter to you.", low: "Art and aesthetics aren't a big draw for you." },
+  cre: { trait: "O", name: "Creative Imagination", def: "A rich inner world and original thinking.",
+         high: "You have a vivid imagination and enjoy coming up with new ideas.", low: "You tend to think in grounded, realistic terms." },
+  org: { trait: "C", name: "Organization", def: "Keeping your space, materials, and plans in order.",
+         high: "You like things tidy and structured.", low: "You're comfortable with some clutter and loose structure." },
+  pro: { trait: "C", name: "Productiveness", def: "Getting started on tasks and sticking with them.",
+         high: "You tend to dive into work and keep at it.", low: "Getting started is often the hardest part for you." },
+  rsp: { trait: "C", name: "Responsibility", def: "Reliability and follow-through on commitments.",
+         high: "When you commit to something, people can count on it.", low: "Commitments sometimes slip, especially ones you didn't choose." },
+  soc: { trait: "E", name: "Sociability", def: "Enjoying and seeking out other people's company.",
+         high: "You enjoy being around people and strike up conversations easily.", low: "You're comfortable with your own company and keep social time selective." },
+  ass: { trait: "E", name: "Assertiveness", def: "Speaking up, taking charge, and influencing a group.",
+         high: "You're comfortable taking the lead and stating your views.", low: "You usually let others lead and contribute in quieter ways." },
+  ene: { trait: "E", name: "Energy Level", def: "Your pace of life and level of enthusiasm.",
+         high: "You keep a busy, active pace.", low: "You prefer a slower, more relaxed pace." },
+  com: { trait: "A", name: "Compassion", def: "Concern for other people's feelings and well-being.",
+         high: "Other people's struggles move you, and you want to help.", low: "You tend to keep some emotional distance from other people's problems." },
+  res: { trait: "A", name: "Respectfulness", def: "Treating others with courtesy, even in disagreement.",
+         high: "You make a point of treating people politely, even when you disagree.", low: "You can be blunt and don't mind if a remark lands sharply." },
+  tru: { trait: "A", name: "Trust", def: "Your default assumptions about other people's intentions.",
+         high: "You tend to give people the benefit of the doubt.", low: "You watch others' motives until they earn your trust." },
+  anx: { trait: "N", name: "Anxiety", def: "How much you worry and feel tense.",
+         high: "You often anticipate what might go wrong.", low: "You tend to stay relaxed and don't worry much." },
+  dep: { trait: "N", name: "Depression", def: "Proneness to low mood and self-doubt (a trait tendency, not a diagnosis).",
+         high: "You're more prone than most to low moods and to being hard on yourself.", low: "You generally feel content and comfortable with who you are." },
+  vol: { trait: "N", name: "Emotional Volatility", def: "How quickly and strongly your mood shifts, including irritation.",
+         high: "Your feelings can shift quickly, and irritation may flare.", low: "Your moods are steady, and it takes a lot to get under your skin." }
+};
+
+/* =================================================================
+   TWO-TRAIT PAIRINGS — after the "personality style" approach of
+   Costa & Piedmont (2003). Keys: sign of first trait, sign of second.
+   ================================================================= */
+const PAIRS = [
+  { a: "N", b: "E", kind: "Well-being style",
+    note: "Extraversion and Neuroticism are the two Big Five traits most strongly linked to happiness and life satisfaction, in opposite directions (Steel, Schmidt & Shultz, 2008).",
+    q: {
+      "++": ["Intense and expressive", "You feel emotions strongly in both directions: plenty of excitement and enjoyment, and real stress and worry too. Your mood may track your social life closely, so good days are very good and hard days are noticeably hard. Talking about how you feel comes naturally, which helps."],
+      "+-": ["Cautious and inward", "You tend to feel stress more than most while having less appetite for social stimulation, so worries may stay inside rather than get talked through. This pairing is associated with lower average well-being, which makes deliberate habits (sleep, movement, and one or two trusted people) especially valuable."],
+      "-+": ["Upbeat and steady", "Social energy plus emotional steadiness is the combination most strongly associated with high life satisfaction. You likely bounce back quickly from setbacks and find time with people restorative rather than draining."],
+      "--": ["Calm and low-key", "Even-keeled and reserved, you probably don't experience dramatic emotional highs or lows. Others may read you as unflappable, and you may prefer quiet contentment to excitement."]
+    } },
+  { a: "N", b: "O", kind: "Coping style",
+    note: "Neuroticism shapes how much emotion you experience; Openness shapes how much you explore and reflect on it. Together they describe a characteristic way of handling stress and the unexpected.",
+    q: {
+      "++": ["Sensitive explorer", "You feel things deeply and notice a lot, and you tend to examine your experiences rather than push them aside. That inner richness can fuel creativity and insight, but it can also tip into rumination. Writing, art, or talking things through are natural outlets."],
+      "+-": ["Comfort in the familiar", "When stress hits, you tend to reach for familiar routines, people, and places rather than experiment with new approaches. It helps to set up a few go-to coping strategies before a big transition, like your first semester, rather than in the middle of it."],
+      "-+": ["Adaptive explorer", "Calm and curious, you tend to treat surprises and setbacks as interesting problems rather than threats. You're probably comfortable with ambiguity and willing to rethink plans when circumstances change."],
+      "--": ["Unbothered pragmatist", "Steady and practical, you don't dwell on feelings or abstract worries; you'd rather deal with what's in front of you. That makes you dependable in a crisis, though you may sometimes miss emotional undercurrents in yourself or others."]
+    } },
+  { a: "N", b: "A", kind: "Conflict style",
+    note: "Low Agreeableness is one of the most consistent personality correlates of interpersonal conflict and aggression (Jones, Miller & Lynam, 2011); the irritability side of Neuroticism tends to amplify it.",
+    q: {
+      "++": ["Conflict-averse", "You care about others and feel tension strongly, so disagreements can be genuinely uncomfortable. You may give in to keep the peace or replay hard conversations afterward. Practicing assertiveness in low-stakes moments makes the bigger ones easier."],
+      "+-": ["Quick to flare", "Strong emotional reactions combined with a skeptical, competitive streak mean irritation can surface quickly. You'll stand up for yourself, but conflicts may escalate faster than you intend. Pausing before you respond is a high-leverage habit."],
+      "-+": ["Easygoing", "Hard to rattle and slow to anger, you handle friction gracefully and are seen as easy to be around. You can disagree without drama, which makes you a natural mediator."],
+      "--": ["Cool and tough-minded", "Not easily upset and not easily swayed by others' feelings, you stay composed in arguments and can make hard calls. That's valuable in debate and decision-making, though others may sometimes read you as cool or blunt."]
+    } },
+  { a: "N", b: "C", kind: "Self-control style",
+    note: "Low Conscientiousness is the strongest personality correlate of procrastination, with Neuroticism playing a smaller role (Steel, 2007). Research on perfectionism links high standards to Conscientiousness and self-critical worry to Neuroticism (Stoeber & Otto, 2006).",
+    q: {
+      "++": ["Driven worrier", "You work hard and hold high standards, but stress may be part of the fuel. This combination can produce excellent work and also perfectionism, where nothing ever feels finished. Sometimes \u201Cgood enough, on time\u201D is the right target."],
+      "+-": ["Easily derailed", "Stress can make it harder to stay on task, and falling behind creates more stress: a loop that feeds procrastination. External structure works well here, such as calendars, study partners, and breaking big tasks into small, concrete steps."],
+      "-+": ["Steady and directed", "Organized and calm, you pursue goals without much drama, and pressure tends to sharpen rather than scatter you. This is a strong foundation for academic and work performance."],
+      "--": ["Relaxed and spontaneous", "Laid-back about both feelings and plans, you're unlikely to be stressed by disorder. The catch is that deadlines can sneak up because nothing feels urgent until it is. A brief weekly look at your calendar goes a long way."]
+    } },
+  { a: "E", b: "O", kind: "Interests",
+    note: "Extraversion and Openness share a common thread that DeYoung (2006) calls Plasticity: a drive to explore and engage with new experiences, social for one trait and intellectual for the other.",
+    q: {
+      "++": ["Social explorer", "You're drawn to new people and new ideas at once. You may enjoy debates, travel, performing arts, and a wide variety of activities, and you probably like meeting people who think differently from you."],
+      "+-": ["Social traditionalist", "You enjoy people and activity, usually in familiar forms: team sports, parties, shared traditions, popular entertainment. You're likely to thrive in established groups with a strong sense of community."],
+      "-+": ["Inner explorer", "Your adventures are often internal: reading, ideas, art, music, solo projects. You likely enjoy deep one-on-one conversations far more than small talk at large gatherings."],
+      "--": ["Homebody", "You prefer familiar routines, comfortable surroundings, and low-key activities. Stability and a few dependable interests matter more to you than novelty."]
+    } },
+  { a: "E", b: "A", kind: "Social style",
+    note: "Extraversion is the strongest Big Five predictor of who emerges as a leader (Judge et al., 2002); Agreeableness shapes whether that influence feels warm or competitive.",
+    q: {
+      "++": ["Warm connector", "Outgoing and kind, you tend to build wide friendship networks and make others feel welcome. People likely seek you out, and you enjoy bringing groups together."],
+      "+-": ["Bold competitor", "Socially confident and willing to push back, you're comfortable taking charge, arguing your case, and competing. That can make you an effective leader or advocate, though it can come across as domineering."],
+      "-+": ["Quiet supporter", "Gentle and considerate, you're more often the listener than the talker. Friends likely value your loyalty and the steady support you offer without needing the spotlight."],
+      "--": ["Independent skeptic", "Reserved and self-reliant, you prefer your own company and your own judgment. You're slow to trust and hard to sway, which protects you from manipulation but can make new relationships slower to build."]
+    } },
+  { a: "E", b: "C", kind: "Activity style",
+    note: "Sensation seeking, the appetite for novel and intense experiences, runs higher in people who are more extraverted and less conscientious (Zuckerman, 2007).",
+    q: {
+      "++": ["Energetic achiever", "High energy plus discipline: you can juggle many commitments and still follow through. You're likely to be busy, productive, and visible on campus."],
+      "+-": ["Fun seeker", "You love excitement and spontaneity, and plans may lose out to whatever is happening right now. You bring energy to any group, but obligations can slip when something more fun comes along."],
+      "-+": ["Quiet achiever", "Steady and methodical, you prefer to work at your own pace, often independently. People can count on you to get things done without fanfare."],
+      "--": ["Unhurried", "You take a relaxed approach to both social life and tasks. An external push (a deadline, a study partner, a schedule) may be what gets you moving on things that don't excite you."]
+    } },
+  { a: "O", b: "A", kind: "Attitudes",
+    note: "Openness is the Big Five trait most consistently linked to social and political attitudes, with higher Openness associated with more liberal views on average (Carney et al., 2008).",
+    q: {
+      "++": ["Open-hearted", "Curious and compassionate, you tend to be tolerant and interested in perspectives unlike your own. You may be drawn to social causes and to understanding why people see the world differently."],
+      "+-": ["Independent thinker", "You love ideas and enjoy testing them, including other people's. You're comfortable being critical and defending unpopular positions, which makes you a sharp discussant and occasionally an exhausting one."],
+      "-+": ["Loyal traditionalist", "Kind and conventional, you value community, shared traditions, and getting along. You're likely a steady, loyal presence in the groups you belong to."],
+      "--": ["Firm convictions", "Practical and skeptical, you hold your views firmly and aren't easily talked out of them. You value straight talk and proven approaches over fashionable new ideas."]
+    } },
+  { a: "O", b: "C", kind: "Learning style",
+    note: "Conscientiousness is the strongest Big Five predictor of academic performance, and Openness adds a smaller positive effect (Poropat, 2009).",
+    q: {
+      "++": ["Engaged scholar", "Curiosity plus discipline is an excellent combination for academic work: you want to understand ideas deeply, and you'll put in the work to get there."],
+      "+-": ["Big-idea dreamer", "You love ideas and starting new projects; finishing them is harder. Pairing your curiosity with outside structure (deadlines, accountability partners, smaller milestones) helps turn inspiration into results."],
+      "-+": ["Methodical learner", "You prefer clear expectations, concrete material, and structured learning, and you're thorough and reliable in carrying it out. Courses with explicit rubrics and practical applications likely suit you best."],
+      "--": ["Needs a reason", "Academic material may feel unengaging unless it has an obvious practical payoff. Connecting coursework to goals you care about (a career, a skill, a project) makes it easier to stay motivated."]
+    } },
+  { a: "A", b: "C", kind: "Character style",
+    note: "Agreeableness and Conscientiousness, together with emotional stability, form a higher-order cluster that DeYoung (2006) calls Stability: the capacity to keep relationships, emotions, and goals on an even keel.",
+    q: {
+      "++": ["Dependable helper", "Caring and reliable, you're the teammate everyone hopes to get. You follow through on commitments and pay attention to how people are doing."],
+      "+-": ["Good intentions", "You genuinely want to help and often say yes, but follow-through can lag behind your good intentions. Saying yes to fewer things, and tracking what you've promised, keeps your reputation in line with your kindness."],
+      "-+": ["Results-focused", "Disciplined and goal-driven, you put getting the job done ahead of smoothing feelings. You can be extremely effective and may seem demanding to people who work at a different pace."],
+      "--": ["Free agent", "You follow your own agenda and don't feel bound by others' expectations. That independence has real value, but group projects that need tight coordination may be a source of friction."]
+    } }
+];
+
+/* =================================================================
+   THREE-TRAIT SPOTLIGHTS — shown when all three conditions are met
+   (1 = above average, -1 = below average).
+   ================================================================= */
+const SPOTLIGHTS = [
+  { need: { E: 1, O: 1, C: -1 }, title: "Novelty seeker",
+    text: "Outgoing, curious, and spontaneous, you're drawn to new people, places, and ideas, and you'd rather follow your interest than a schedule. This trio maps onto what researchers call sensation seeking, which runs higher in people who are extraverted and open and lower in those who are conscientious (Zuckerman, 2007). It is linked to adventurousness and creative and entrepreneurial interests, and also to more risk-taking; lower Conscientiousness in particular predicts riskier health behaviors (Bogg & Roberts, 2004).",
+    tip: "First year will offer far more interesting options than you have time for. Choose commitments on purpose, and use deadlines you share with other people, like a study partner or a club role, to turn interest into follow-through." },
+  { need: { O: 1, C: -1, N: 1 }, title: "Artistic temperament",
+    text: "You combine a rich imagination with emotional sensitivity and a preference for flexibility over structure. A major review of personality and creativity found that artists, compared with non-artists, tend to be more open, less conscientious, and more emotionally sensitive (Feist, 1998). The same depth of feeling that fuels creative work can make stress and setbacks hit harder.",
+    tip: "Creative outlets can double as coping tools. Pair them with light structure, such as regular work sessions and a few fixed deadlines, so your ideas get finished, and lean on support when your mood dips." },
+  { need: { O: 1, C: 1, N: -1 }, title: "Engaged, steady learner",
+    text: "Curious, disciplined, and calm under pressure, you have the combination of traits most consistently tied to academic success. Conscientiousness is the strongest Big Five predictor of grades and Openness adds to it (Poropat, 2009), while in university samples higher Neuroticism has predicted lower exam performance (Chamorro-Premuzic & Furnham, 2003).",
+    tip: "You're well set up for college work. The main risk is overcommitment, since curiosity and drive together can fill every hour. Protect time for sleep and friends." },
+  { need: { E: 1, C: 1, N: -1 }, title: "Emergent leader",
+    text: "Socially confident, organized, and emotionally steady, your profile resembles the one that most often emerges as a leader in groups. In a large meta-analysis, Extraversion was the strongest personality predictor of leadership, followed by Conscientiousness, with emotional stability also contributing (Judge, Bono, Ilies & Gerhardt, 2002).",
+    tip: "Group projects and student organizations will probably pull you toward leadership roles. The best student leaders also make room for quieter members' ideas." },
+  { need: { E: 1, A: 1, N: -1 }, title: "Warm and resilient connector",
+    text: "Outgoing, kind, and emotionally steady, you likely find relationships rewarding and recover quickly from social bumps. Extraversion and low Neuroticism are the strongest personality predictors of happiness (Steel, Schmidt & Shultz, 2008), and Agreeableness is linked to smoother, more satisfying relationships (Ozer & Benet-Martínez, 2006).",
+    tip: "You may become a social anchor for others in your residence hall or classes. Notice who's on the edges; your ease can make it easier for them to join in." },
+  { need: { A: 1, C: 1, N: -1 }, title: "Steady and dependable",
+    text: "Agreeable, conscientious, and emotionally stable, you show the full set of traits that make up the higher-order factor researchers call Stability (DeYoung, 2006), or Alpha (Digman, 1997): a tendency to keep relationships, emotions, and goals on an even keel. People high on all three are the ones others rely on.",
+    tip: "Because you're dependable, you may get asked to do more than your share. Reliability doesn't require saying yes to everything." },
+  { need: { A: -1, C: -1, N: 1 }, title: "Quick to act, quick to react",
+    text: "You lean toward spontaneity, independence, and strong reactions, with less patience for rules or other people's expectations. This resembles the profile researchers call undercontrolled (Robins et al., 1996; Asendorpf et al., 2001), and low Agreeableness plus low Conscientiousness are the traits most consistently associated with conflict and impulsive behavior (Jones, Miller & Lynam, 2011). The upside is independence and a willingness to challenge how things are done.",
+    tip: "A brief pause before responding, whether you're angry or about to make an impulsive decision, is a high-leverage habit for this profile. Settings with clear structure, like a team with defined roles, can help too." },
+  { need: { N: 1, E: -1, C: -1 }, title: "A pattern worth being proactive about",
+    text: "Higher stress reactivity, lower social energy, and a looser relationship with structure: this is the combination that large research reviews most often find alongside low mood and depression (Kotov, Gamez, Schmidt & Watson, 2010). That is a statistical pattern across many people, not a prediction about you, and plenty of people with this profile do well. It does mean the habits that protect mood are especially worth building early.",
+    tip: "Simple structure helps a lot: regular sleep and meals, some movement, one or two reliable people you check in with, and fixed times for coursework. If things start to feel heavy, your campus counseling center is a good place to start, and reaching out early works better than waiting." }
+];
+
+/* =================================================================
+   PERSONALITY TYPES — approximate prototype profiles (z-scores)
+   based on Robins et al. (1996) and Asendorpf et al. (2001).
+   ================================================================= */
+const TYPES = [
+  { name: "Resilient", proto: { N: -0.8, E: 0.5, O: 0.5, A: 0.5, C: 0.6 },
+    text: "Emotionally steady and above average on the other four traits. In studies of children and adults, people near this profile tend to adapt well to change, get along with others, and do well in school and work." },
+  { name: "Overcontrolled", proto: { N: 0.9, E: -1.0, O: -0.3, A: 0.3, C: 0.0 },
+    text: "Higher in negative emotion and lower in Extraversion, often with average-to-high Agreeableness. People near this profile tend to be thoughtful and careful, and more prone to shyness, worry, and keeping feelings to themselves." },
+  { name: "Undercontrolled", proto: { N: 0.5, E: 0.3, O: -0.1, A: -0.9, C: -1.0 },
+    text: "Lower in Agreeableness and Conscientiousness. People near this profile tend to be spontaneous and independent, and more prone to impulsive choices and friction with rules and other people." }
+];
+
+const REFERENCES = [
+  "Asendorpf, J. B., Borkenau, P., Ostendorf, F., & van Aken, M. A. G. (2001). Carving personality description at its joints: Confirmation of three replicable personality prototypes for both children and adults. <i>European Journal of Personality, 15</i>, 169&ndash;198.",
+  "Bogg, T., & Roberts, B. W. (2004). Conscientiousness and health-related behaviors: A meta-analysis of the leading behavioral contributors to mortality. <i>Psychological Bulletin, 130</i>, 887&ndash;919.",
+  "Carney, D. R., Jost, J. T., Gosling, S. D., & Potter, J. (2008). The secret lives of liberals and conservatives: Personality profiles, interaction styles, and the things they leave behind. <i>Political Psychology, 29</i>, 807&ndash;840.",
+  "Chamorro-Premuzic, T., & Furnham, A. (2003). Personality predicts academic performance: Evidence from two longitudinal university samples. <i>Journal of Research in Personality, 37</i>, 319&ndash;338.",
+  "Costa, P. T., Jr., & Piedmont, R. L. (2003). Multivariate assessment: NEO-PI-R profiles of Madeline G. In J. S. Wiggins (Ed.), <i>Paradigms of personality assessment</i>. Guilford Press.",
+  "DeYoung, C. G. (2006). Higher-order factors of the Big Five in a multi-informant sample. <i>Journal of Personality and Social Psychology, 91</i>, 1138&ndash;1151.",
+  "Digman, J. M. (1997). Higher-order factors of the Big Five. <i>Journal of Personality and Social Psychology, 73</i>, 1246&ndash;1256.",
+  "Feist, G. J. (1998). A meta-analysis of personality in scientific and artistic creativity. <i>Personality and Social Psychology Review, 2</i>, 290&ndash;309.",
+  "Goldberg, L. R., Johnson, J. A., Eber, H. W., Hogan, R., Ashton, M. C., Cloninger, C. R., & Gough, H. G. (2006). The International Personality Item Pool and the future of public-domain personality measures. <i>Journal of Research in Personality, 40</i>, 84&ndash;96.",
+  "Hudson, N. W., & Fraley, R. C. (2015). Volitional personality trait change: Can people choose to change their personality traits? <i>Journal of Personality and Social Psychology, 109</i>, 490&ndash;507.",
+  "Jones, S. E., Miller, J. D., & Lynam, D. R. (2011). Personality, antisocial behavior, and aggression: A meta-analytic review. <i>Journal of Criminal Justice, 39</i>, 329&ndash;337.",
+  "Judge, T. A., Bono, J. E., Ilies, R., & Gerhardt, M. W. (2002). Personality and leadership: A qualitative and quantitative review. <i>Journal of Applied Psychology, 87</i>, 765&ndash;780.",
+  "Kotov, R., Gamez, W., Schmidt, F., & Watson, D. (2010). Linking &ldquo;big&rdquo; personality traits to anxiety, depressive, and substance use disorders: A meta-analysis. <i>Psychological Bulletin, 136</i>, 768&ndash;821.",
+  "Ozer, D. J., & Benet-Mart&iacute;nez, V. (2006). Personality and the prediction of consequential outcomes. <i>Annual Review of Psychology, 57</i>, 401&ndash;421.",
+  "Poropat, A. E. (2009). A meta-analysis of the five-factor model of personality and academic performance. <i>Psychological Bulletin, 135</i>, 322&ndash;338.",
+  "Roberts, B. W., Walton, K. E., & Viechtbauer, W. (2006). Patterns of mean-level change in personality traits across the life course: A meta-analysis of longitudinal studies. <i>Psychological Bulletin, 132</i>, 1&ndash;25.",
+  "Robins, R. W., John, O. P., Caspi, A., Moffitt, T. E., & Stouthamer-Loeber, M. (1996). Resilient, overcontrolled, and undercontrolled boys: Three replicable personality types. <i>Journal of Personality and Social Psychology, 70</i>, 157&ndash;171.",
+  "Soto, C. J., & John, O. P. (2017). The next Big Five Inventory (BFI-2): Developing and assessing a hierarchical model with 15 facets to enhance bandwidth, fidelity, and predictive power. <i>Journal of Personality and Social Psychology, 113</i>, 117&ndash;143.",
+  "Soto, C. J., & John, O. P. (2017). Short and extra-short forms of the Big Five Inventory&ndash;2: The BFI-2-S and BFI-2-XS. <i>Journal of Research in Personality, 68</i>, 69&ndash;81.",
+  "Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review of quintessential self-regulatory failure. <i>Psychological Bulletin, 133</i>, 65&ndash;94.",
+  "Steel, P., Schmidt, J., & Shultz, J. (2008). Refining the relationship between personality and subjective well-being. <i>Psychological Bulletin, 134</i>, 138&ndash;161.",
+  "Stoeber, J., & Otto, K. (2006). Positive conceptions of perfectionism: Approaches, evidence, challenges. <i>Personality and Social Psychology Review, 10</i>, 295&ndash;319.",
+  "Zuckerman, M. (2007). <i>Sensation seeking and risky behavior</i>. American Psychological Association."
+];
+
+/* =================================================================
+   APP LOGIC
+   ================================================================= */
+const $ = id => document.getElementById(id);
+const el = {
+  intro: $("intro"), quiz: $("quiz"), results: $("results"),
+  start: $("start"), name: $("name"), back: $("back"), scale: $("scale"),
+  qText: $("q-text"), qCount: $("q-count"), qLeft: $("q-left"),
+  progress: $("progress"), fill: $("progress-fill"), course: $("course"), brand: $("brand")
+};
+const N_ITEMS = ITEMS.length;
+const state = { i: 0, answers: new Array(N_ITEMS).fill(null), name: "", locked: false, result: null, completedAt: null };
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- helpers ---------- */
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
+function ordSuffix(n){ const v = n % 100; if (v >= 11 && v <= 13) return "th"; return ({ 1:"st", 2:"nd", 3:"rd" }[n % 10]) || "th"; }
+function ordinal(n){ return n + ordSuffix(n); }
+function normCdf(z){
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+function pctFromZ(z){ return clamp(Math.round(normCdf(z) * 100), 1, 99); }
+function levelOf(z){
+  if (z >= 1)     return { key: "high", label: "High" };
+  if (z >= 0.35)  return { key: "high", label: "Somewhat high" };
+  if (z > -0.35)  return { key: "mid",  label: "Average" };
+  if (z > -1)     return { key: "low",  label: "Somewhat low" };
+  return { key: "low", label: "Low" };
+}
+function dirWord(z){
+  if (z >= 0.35) return "High";
+  if (z <= -0.35) return "Low";
+  return z >= 0 ? "Slightly high" : "Slightly low";
+}
+function comparePhrase(p){
+  return p >= 50 ? `Higher than about ${p}% of people` : `Lower than about ${100 - p}% of people`;
+}
+function listJoin(arr){
+  if (arr.length <= 1) return arr.join("");
+  if (arr.length === 2) return arr[0] + " and " + arr[1];
+  return arr.slice(0, -1).join(", ") + ", and " + arr[arr.length - 1];
+}
+function chip(t, z){ return `<span class="chip t-${t}">${dirWord(z)} ${TRAITS[t].name}</span>`; }
+
+/* ---------- scoring ---------- */
+function score(answers){
+  const sums = {}, counts = {};
+  ITEMS.forEach((it, i) => {
+    const v = it.key > 0 ? answers[i] : 6 - answers[i];
+    sums[it.facet] = (sums[it.facet] || 0) + v;
+    counts[it.facet] = (counts[it.facet] || 0) + 1;
+  });
+  const facets = {};
+  Object.keys(FACETS).forEach(f => {
+    const raw = sums[f] / counts[f];
+    const z = (raw - NORMS.facets[f].m) / NORMS.facets[f].sd;
+    facets[f] = { raw, z, pct: pctFromZ(z) };
+  });
+  const domains = {};
+  TRAIT_ORDER.forEach(t => {
+    const raw = TRAITS[t].facets.reduce((s, f) => s + facets[f].raw, 0) / TRAITS[t].facets.length;
+    const z = (raw - NORMS.domains[t].m) / NORMS.domains[t].sd;
+    domains[t] = { raw, z, pct: pctFromZ(z) };
+  });
+  // response-quality checks
+  const tally = [0,0,0,0,0,0];
+  answers.forEach(a => tally[a]++);
+  const modal = Math.max(...tally);
+  const meanRaw = answers.reduce((s, a) => s + a, 0) / answers.length;
+  return { facets, domains, quality: { modal, meanRaw } };
+}
+
+/* ---------- charts ---------- */
+function curveSVG(z, label, idx){
+  const w = 600, h = 86, base = h - 4, top = 9;
+  const X = v => (v + 3) / 6 * w;
+  const Y = v => base - Math.exp(-v * v / 2) * (base - top);
+  const zc = clamp(z, -2.9, 2.9);
+  const pts = [];
+  for (let k = 0; k <= 120; k++){ const v = -3 + k * 0.05; pts.push(X(v).toFixed(1) + "," + Y(v).toFixed(1)); }
+  const line = "M" + pts.join(" L");
+  const area = line + ` L${w},${base} L0,${base} Z`;
+  const sp = [];
+  for (let v = -3; v < zc; v += 0.05) sp.push(X(v).toFixed(1) + "," + Y(v).toFixed(1));
+  sp.push(X(zc).toFixed(1) + "," + Y(zc).toFixed(1));
+  const shade = `M0,${base} L` + sp.join(" L") + ` L${X(zc).toFixed(1)},${base} Z`;
+  const mx = X(zc).toFixed(1), my = Y(zc).toFixed(1);
+  const delay = idx != null ? ` style="animation-delay:${idx * 90}ms"` : "";
+  return `<svg class="curve" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">
+    <path class="c-area" d="${area}"/>
+    <path class="c-shade" d="${shade}"${delay}/>
+    <line class="c-mid" x1="${w/2}" y1="${top - 6}" x2="${w/2}" y2="${base}"/>
+    <path class="c-line" d="${line}"/>
+    <line class="c-base" x1="0" y1="${base}" x2="${w}" y2="${base}"/>
+    <line class="c-mark" x1="${mx}" y1="${my}" x2="${mx}" y2="${base}"/>
+    <circle class="c-dot" cx="${mx}" cy="${my}" r="7"/>
+  </svg>`;
+}
+
+function quadSVG(p){
+  const L = 22, R = 146, T = 4, B = 128, mx = (L + R) / 2, my = (T + B) / 2, half = (R - L) / 2;
+  const x = mx + clamp(p.za, -2.3, 2.3) / 2.5 * half;
+  const y = my - clamp(p.zb, -2.3, 2.3) / 2.5 * half;
+  const qx = p.za >= 0 ? mx : L, qy = p.zb >= 0 ? T : my;
+  const A = TRAITS[p.a].name, Bn = TRAITS[p.b].name;
+  return `<svg class="quad" viewBox="0 0 150 150" role="img" aria-label="${esc(`Your position: ${dirWord(p.za).toLowerCase()} ${A}, ${dirWord(p.zb).toLowerCase()} ${Bn}`)}">
+    <rect class="q-frame" x="${L}" y="${T}" width="${R - L}" height="${B - T}"/>
+    <rect class="q-hit" x="${qx}" y="${qy}" width="${half}" height="${half}"/>
+    <line class="q-axis" x1="${mx}" y1="${T}" x2="${mx}" y2="${B}"/>
+    <line class="q-axis" x1="${L}" y1="${my}" x2="${R}" y2="${my}"/>
+    <circle class="q-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5"/>
+    <text class="q-lab t-${p.a}" x="${mx}" y="144" text-anchor="middle">${A} &#8594;</text>
+    <text class="q-lab t-${p.b}" x="12" y="${my}" text-anchor="middle" transform="rotate(-90 12 ${my})">${Bn} &#8594;</text>
+  </svg>`;
+}
+
+function heroSVG(){
+  const w = 640, h = 150, base = h - 6, top = 14;
+  const X = v => (v + 3) / 6 * w;
+  const Y = v => base - Math.exp(-v * v / 2) * (base - top);
+  const pts = [];
+  for (let k = 0; k <= 120; k++){ const v = -3 + k * 0.05; pts.push(X(v).toFixed(1) + "," + Y(v).toFixed(1)); }
+  const area = "M" + pts.join(" L") + ` L${w},${base} L0,${base} Z`;
+  const dots = [["N", -1.25], ["A", -0.45], ["E", 0.15], ["C", 0.8], ["O", 1.55]]
+    .map(([t, v]) => `<circle class="h-dot t-${t}" cx="${X(v).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="10"/>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}"><path class="h-area" d="${area}"/><line class="h-base" x1="0" y1="${base}" x2="${w}" y2="${base}"/>${dots}</svg>`;
+}
+
+/* ---------- quiz flow ---------- */
+function show(which){
+  ["intro", "quiz", "results"].forEach(k => { el[k].hidden = (k !== which); });
+  if (which === "intro"){
+    el.start.textContent = state.answers.some(a => a !== null) ? "Continue the inventory" : "Start the inventory";
+  }
+  window.scrollTo(0, 0);
+}
+
+function buildScale(){
+  el.scale.innerHTML = SCALE.map((label, k) =>
+    `<button type="button" class="opt" data-v="${k + 1}" aria-pressed="false"><span class="num" aria-hidden="true">${k + 1}</span><span>${label}</span></button>`
+  ).join("");
+  el.scale.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => answer(+b.dataset.v)));
+}
+
+function renderQuestion(animate){
+  const it = ITEMS[state.i];
+  el.qCount.textContent = `Statement ${state.i + 1} of ${N_ITEMS}`;
+  const answered = state.answers.filter(v => v !== null).length;
+  const left = N_ITEMS - answered;
+  el.qLeft.textContent = left === 0 ? "All answered" : `${left} to go`;
+  el.fill.style.width = (answered / N_ITEMS * 100) + "%";
+  el.progress.setAttribute("aria-valuenow", String(answered));
+  el.progress.setAttribute("aria-valuemax", String(N_ITEMS));
+  el.qText.textContent = it.text;
+  if (animate && !reduceMotion){ el.qText.classList.remove("enter"); void el.qText.offsetWidth; el.qText.classList.add("enter"); }
+  el.scale.querySelectorAll(".opt").forEach(b => b.setAttribute("aria-pressed", state.answers[state.i] === +b.dataset.v ? "true" : "false"));
+  el.back.textContent = state.i === 0 ? "Back to instructions" : "Previous statement";
+}
+
+function answer(v){
+  if (state.locked || el.quiz.hidden) return;
+  state.answers[state.i] = v;
+  renderQuestion(false);
+  state.locked = true;
+  setTimeout(() => {
+    state.locked = false;
+    if (state.i < N_ITEMS - 1){
+      state.i++;
+      renderQuestion(true);
+      el.qText.focus({ preventScroll: true });
+    } else if (state.answers.every(a => a !== null)){
+      finish();
+    }
+  }, reduceMotion ? 120 : 240);
+}
+
+function goBack(){
+  if (state.locked) return;
+  if (state.i === 0){ show("intro"); el.start.focus(); return; }
+  state.i--;
+  renderQuestion(true);
+  el.qText.focus({ preventScroll: true });
+}
+
+function start(){
+  state.name = el.name.value.trim();
+  const firstOpen = state.answers.findIndex(a => a === null);
+  state.i = firstOpen === -1 ? 0 : firstOpen;
+  show("quiz");
+  renderQuestion(true);
+  el.qText.focus({ preventScroll: true });
+}
+
+function finish(){
+  state.result = score(state.answers);
+  state.completedAt = new Date();
+  renderResults();
+  show("results");
+  const h = $("res-title"); if (h) h.focus({ preventScroll: true });
+}
+
+function restart(){
+  if (!window.confirm("Start over? Your current answers will be cleared.")) return;
+  state.answers = new Array(N_ITEMS).fill(null);
+  state.i = 0; state.result = null; state.completedAt = null;
+  el.results.innerHTML = "";
+  show("intro");
+  el.start.focus();
+}
+
+document.addEventListener("keydown", e => {
+  if (el.quiz.hidden || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (/^[1-5]$/.test(e.key)){ e.preventDefault(); answer(+e.key); }
+  else if (e.key === "ArrowLeft" || e.key === "Backspace"){ e.preventDefault(); goBack(); }
+  else if (e.key === "ArrowRight" && state.answers[state.i] !== null && state.i < N_ITEMS - 1){
+    e.preventDefault(); state.i++; renderQuestion(true); el.qText.focus({ preventScroll: true });
+  }
+});
+
+/* ---------- results ---------- */
+function renderResults(){
+  const r = state.result, D = r.domains, F = r.facets;
+  const who = state.name ? `${esc(state.name)}\u2019s personality profile` : "Your personality profile";
+  const dateStr = state.completedAt.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  const out = [];
+
+  /* Header */
+  out.push(`<header class="res-head">
+    <h1 id="res-title" tabindex="-1">${who}</h1>
+    <p class="res-meta">Completed ${esc(dateStr)}${CONFIG.course ? ". " + esc(CONFIG.course) : ""}</p>
+    <div class="actions">
+      <button type="button" class="btn" id="dl">Download results (CSV)</button>
+      <button type="button" class="btn secondary" id="pr">Print or save as PDF</button>
+      <button type="button" class="btn secondary" id="again">Start over</button>
+    </div>
+  </header>`);
+
+  /* Summary sentence */
+  const ranked = TRAIT_ORDER.map(t => ({ t, z: D[t].z })).sort((a, b) => Math.abs(b.z) - Math.abs(a.z));
+  const notable = ranked.filter(x => Math.abs(x.z) >= 0.35).slice(0, 3);
+  let summary;
+  if (!notable.length){
+    summary = "Your scores sit near the middle on all five traits. A balanced profile like this is common, and it often means your behavior depends more on the situation than on a strong default.";
+  } else {
+    const parts = notable.map(x => `${x.z > 0 ? "high" : "low"} ${TRAITS[x.t].name} (${ordinal(D[x.t].pct)} percentile)`);
+    summary = `What stands out most in your profile is ${listJoin(parts)}.`;
+    if (notable.length < 3) summary += " Your other scores fall near the middle of the range.";
+  }
+  out.push(`<p class="summary">${summary}</p>`);
+
+  /* Response-quality warnings */
+  const q = r.quality;
+  if (q.modal >= 24){
+    out.push(`<div class="warn"><p><strong>Check your answers.</strong> You gave the same response to ${q.modal} of ${N_ITEMS} statements. Because half the statements are worded in the opposite direction, answering them all the same way makes your scores less meaningful. Consider starting over and reading each statement carefully.</p></div>`);
+  } else if (q.meanRaw >= 4.1 || q.meanRaw <= 1.9){
+    out.push(`<div class="warn"><p><strong>Check your answers.</strong> You ${q.meanRaw >= 4.1 ? "agreed" : "disagreed"} with most statements, including pairs that point in opposite directions (for example, &ldquo;I like order&rdquo; and &ldquo;I leave my belongings around&rdquo;). Your scores may be less accurate as a result.</p></div>`);
+  }
+
+  /* Overview */
+  out.push(`<section class="section" aria-labelledby="ov-h">
+    <h2 id="ov-h">Your five traits at a glance</h2>
+    <p class="section-lead">Each curve shows how scores are spread across people, with most near the middle. The shaded area is the share of people who score below you, and the dot marks where you fall.</p>
+    <div class="overview">`);
+  TRAIT_ORDER.forEach((t, idx) => {
+    const d = D[t], T = TRAITS[t], lv = levelOf(d.z);
+    out.push(`<div class="ov-row t-${t}">
+      <div class="ov-label"><a class="ov-name" href="#trait-${t}">${T.name}</a><span class="ov-level">${lv.label}</span></div>
+      <div class="ov-chart">${curveSVG(d.z, `${T.name}: ${ordinal(d.pct)} percentile`, idx)}<div class="poles" aria-hidden="true"><span>${T.poles[0]}</span><span>${T.poles[1]}</span></div></div>
+      <div class="ov-pct"><span class="pct-num">${d.pct}<span class="ord">${ordSuffix(d.pct)}</span></span><span class="pct-suf">percentile</span></div>
+    </div>`);
+  });
+  out.push(`</div><p class="curve-key">Percentiles are estimates based on typical adult scores, not on your classmates. The dashed line marks the average.</p></section>`);
+
+  /* Trait detail */
+  out.push(`<section class="section" aria-labelledby="tr-h">
+    <h2 id="tr-h">Inside each trait</h2>
+    <p class="section-lead">Every trait is built from three facets. Two people with the same overall score can get there in different ways, so the facets often say more about you than the total does.</p>`);
+  TRAIT_ORDER.forEach(t => {
+    const d = D[t], T = TRAITS[t], lv = levelOf(d.z);
+    const fRows = T.facets.map(f => {
+      const fs = F[f], FD = FACETS[f], fl = levelOf(fs.z);
+      const says = fl.key === "high" ? FD.high : fl.key === "low" ? FD.low : "You're near the middle of the range on this facet.";
+      return `<div class="facet">
+        <div><span class="facet-name">${FD.name}</span><span class="facet-def">${FD.def}</span></div>
+        <div class="facet-pct">${ordinal(fs.pct)}<small>percentile</small></div>
+        <div class="track" aria-hidden="true"><div class="track-fill" style="width:${fs.pct}%"></div><div class="track-mid"></div><div class="track-dot" style="left:${fs.pct}%"></div></div>
+        <p class="facet-says">${fl.label}. ${says}</p>
+      </div>`;
+    }).join("");
+    const fz = T.facets.map(f => ({ f, z: F[f].z })).sort((a, b) => b.z - a.z);
+    const spread = fz[0].z - fz[2].z;
+    let note;
+    if (spread >= 1.2){
+      note = `Your facets point in different directions: your ${FACETS[fz[0].f].name} (${ordinal(F[fz[0].f].pct)} percentile) is well above your ${FACETS[fz[2].f].name} (${ordinal(F[fz[2].f].pct)}). Your overall ${T.name} score averages over that split, so the facets describe you more accurately than the total.`;
+    } else if (spread <= 0.5){
+      note = `Your three facets are closely aligned, so your overall ${T.name} score is a good summary of this part of your personality.`;
+    } else {
+      note = `Your facets broadly agree, with ${FACETS[fz[0].f].name} a little higher than ${FACETS[fz[2].f].name}.`;
+    }
+    out.push(`<article class="trait t-${t}" id="trait-${t}">
+      <div class="trait-head"><h3>${T.name}${T.alt ? `<span class="alt">${T.alt}</span>` : ""}</h3></div>
+      <p class="trait-score"><strong>${ordinal(d.pct)} percentile, ${lv.label.toLowerCase()}.</strong> ${comparePhrase(d.pct)}.</p>
+      <p class="trait-what">${T.what}</p>
+      <p class="trait-you">${T[lv.key]}</p>
+      <div class="facets"><h4>The three facets</h4>${fRows}<p class="facet-note">${note}</p></div>
+      <p class="college"><strong>In your first year:</strong> ${T.college[lv.key]}</p>
+      <p class="research">${T.research}</p>
+    </article>`);
+  });
+  out.push(`</section>`);
+
+  /* Pairings */
+  const pairs = PAIRS.map(p => {
+    const za = D[p.a].z, zb = D[p.b].z;
+    const key = (za >= 0 ? "+" : "-") + (zb >= 0 ? "+" : "-");
+    return Object.assign({}, p, { za, zb, key, label: p.q[key][0], text: p.q[key][1], strength: Math.min(Math.abs(za), Math.abs(zb)) });
+  }).sort((x, y) => (y.strength - x.strength) || (Math.abs(y.za * y.zb) - Math.abs(x.za * x.zb)));
+  const topPairs = pairs.filter(p => p.strength >= 0.35).slice(0, 4);
+
+  out.push(`<section class="section" aria-labelledby="pr-h">
+    <h2 id="pr-h">How your traits combine</h2>
+    <p class="section-lead">Traits don&rsquo;t operate in isolation. Reading two at once, an approach Costa and Piedmont (2003) called personality styles, often explains more than either trait alone. These are the pairings where both of your scores are clearly away from average.</p>`);
+  if (!topPairs.length){
+    out.push(`<p class="empty">None of your trait pairings stands out strongly, because at least one trait in every pair is close to average. The full list below shows which way each pairing tilts for you.</p>`);
+  }
+  topPairs.forEach(p => {
+    out.push(`<article class="combo">
+      ${quadSVG(p)}
+      <div>
+        <div class="chips">${chip(p.a, p.za)}${chip(p.b, p.zb)}</div>
+        <h3>${p.label}</h3>
+        <p class="combo-kind">${p.kind}</p>
+        <p>${p.text}</p>
+        <p class="research">${p.note}</p>
+      </div>
+    </article>`);
+  });
+  const rest = pairs.filter(p => !topPairs.includes(p));
+  if (rest.length){
+    out.push(`<details class="allpairs"><summary>See the other ${rest.length} pairings</summary>`);
+    rest.forEach(p => {
+      const tilt = p.strength >= 0.35 ? "clear pattern" : "mild tilt, since at least one score is near average";
+      out.push(`<div class="pair-row">
+        <div class="chips">${chip(p.a, p.za)}${chip(p.b, p.zb)}</div>
+        <h4>${p.label} <span class="tilt">${p.kind}, ${tilt}</span></h4>
+        <p>${p.text}</p>
+      </div>`);
+    });
+    out.push(`</details>`);
+  }
+  out.push(`</section>`);
+
+  /* Spotlights */
+  const spots = SPOTLIGHTS.map(s => {
+    let ok = true, fit = 0;
+    Object.keys(s.need).forEach(t => { const v = D[t].z * s.need[t]; if (v < 0.3) ok = false; fit += v; });
+    return Object.assign({}, s, { ok, fit });
+  }).filter(s => s.ok).sort((a, b) => b.fit - a.fit);
+
+  out.push(`<section class="section" aria-labelledby="sp-h">
+    <h2 id="sp-h">Three-trait patterns from research</h2>
+    <p class="section-lead">Some combinations of three traits have drawn particular attention from researchers. These are the ones your scores match.</p>`);
+  if (!spots.length){
+    out.push(`<p class="empty">Your scores don&rsquo;t match any of the eight three-trait patterns this inventory looks for. That&rsquo;s common: it usually means your profile is either fairly balanced or distinctive in ways that research hasn&rsquo;t singled out. The pairings above are the best guide to how your traits interact.</p>`);
+  }
+  spots.forEach(s => {
+    const chips = Object.keys(s.need).map(t => chip(t, D[t].z)).join("");
+    out.push(`<article class="spot">
+      <div class="chips">${chips}</div>
+      <h3>${s.title}</h3>
+      <p>${s.text}</p>
+      <p class="tip"><strong>In practice:</strong> ${s.tip}</p>
+    </article>`);
+  });
+  out.push(`</section>`);
+
+  /* Types */
+  const vec = ["N", "E", "O", "A", "C"];
+  const zlen = Math.sqrt(vec.reduce((s, t) => s + D[t].z * D[t].z, 0));
+  const types = TYPES.map(ty => {
+    const plen = Math.sqrt(vec.reduce((s, t) => s + ty.proto[t] * ty.proto[t], 0));
+    const dot = vec.reduce((s, t) => s + D[t].z * ty.proto[t], 0);
+    const cos = zlen > 1e-6 ? dot / (zlen * plen) : 0;
+    const sim = Math.max(0, cos) * Math.min(1, zlen / 1.2);
+    const lab = sim >= 0.6 ? "Strong resemblance" : sim >= 0.35 ? "Moderate resemblance" : "Weak resemblance";
+    return Object.assign({}, ty, { sim, lab });
+  });
+  const best = types.reduce((a, b) => (b.sim > a.sim ? b : a));
+  out.push(`<section class="section" aria-labelledby="ty-h">
+    <h2 id="ty-h">Which research-based type do you resemble?</h2>
+    <p class="section-lead">Traits describe personality best, but when researchers sort people by their whole trait profile, three broad types keep reappearing in children and adults alike (Robins et al., 1996; Asendorpf et al., 2001). Most people resemble one somewhat and none perfectly.</p>
+    <div class="types">`);
+  types.forEach(ty => {
+    const closest = ty === best && best.sim >= 0.35;
+    out.push(`<div class="type-row${closest ? " closest" : ""}">
+      <div class="type-head"><h3>${ty.name}</h3><span class="type-tag">${closest ? "Your closest match. " : ""}${ty.lab}</span></div>
+      <div class="meter" aria-hidden="true"><div class="meter-fill" style="width:${Math.round(ty.sim * 100)}%"></div></div>
+      <p>${ty.text}</p>
+    </div>`);
+  });
+  if (best.sim < 0.35){
+    out.push(`<p class="empty">You don&rsquo;t closely resemble any of the three types. That&rsquo;s true of many people, since most profiles fall somewhere between them.</p>`);
+  }
+  out.push(`</div><p class="research">Type profiles here are approximations of the published prototypes, matched on the shape and strength of your five trait scores.</p></section>`);
+
+  /* Caveats */
+  out.push(`<section class="section caveats" aria-labelledby="cv-h">
+    <h2 id="cv-h">Keep in mind</h2>
+    <p><strong>These are estimates.</strong> Thirty statements give a reasonable snapshot of the five broad traits. Each facet rests on just two statements, so facet scores are rougher than trait scores.</p>
+    <p><strong>No trait is good or bad.</strong> High and low scores on every trait come with advantages in some situations and costs in others.</p>
+    <p><strong>Personality changes.</strong> Traits are fairly stable, but not fixed. On average, people become more conscientious and emotionally stable through young adulthood (Roberts, Walton & Viechtbauer, 2006), and people who set goals to change a trait tend to shift in that direction (Hudson & Fraley, 2015).</p>
+    <p><strong>This isn&rsquo;t a diagnosis.</strong> No score here indicates a mental health condition. If stress, worry, or low mood are getting in the way of daily life, your campus counseling center is a good place to start.</p>
+  </section>`);
+
+  /* About */
+  out.push(`<section class="section" aria-labelledby="ab-h">
+    <h2 id="ab-h">About this inventory</h2>
+    <p class="section-lead">The statements come from the International Personality Item Pool (Goldberg et al., 2006), a public-domain collection of personality items. They are arranged to mirror the 15-facet structure of the Big Five Inventory&ndash;2 (Soto &amp; John, 2017), the same structure used by its 30-item short form, the BFI-2-S. Each facet has two statements worded in opposite directions, which helps cancel out the tendency to agree with everything. Because this particular set of 30 statements has not been validated as a unit, treat it as a learning and self-reflection tool rather than a research instrument.</p>
+    <h3 style="font-size:1.15rem;margin:28px 0 10px">References</h3>
+    <ul class="refs">${REFERENCES.map(x => `<li>${x}</li>`).join("")}</ul>
+  </section>`);
+
+  out.push(`<footer class="site-foot">Big Five Personality Inventory. Items from the International Personality Item Pool (public domain). Your responses were scored in your browser and have not been sent anywhere.</footer>`);
+
+  el.results.innerHTML = out.join("");
+  $("dl").addEventListener("click", downloadCSV);
+  $("pr").addEventListener("click", () => window.print());
+  $("again").addEventListener("click", restart);
+}
+
+/* ---------- CSV export ---------- */
+function csvCell(v){
+  const s = String(v == null ? "" : v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function downloadCSV(){
+  const r = state.result;
+  const cols = ["name", "course", "completed"];
+  const vals = [state.name, CONFIG.course, state.completedAt.toISOString()];
+  TRAIT_ORDER.forEach(t => {
+    const n = TRAITS[t].name.toLowerCase();
+    cols.push(`${n}_score`, `${n}_percentile`);
+    vals.push(r.domains[t].raw.toFixed(2), r.domains[t].pct);
+  });
+  TRAIT_ORDER.forEach(t => TRAITS[t].facets.forEach(f => {
+    const n = FACETS[f].name.toLowerCase().replace(/\s+/g, "_");
+    cols.push(`${n}_score`, `${n}_percentile`);
+    vals.push(r.facets[f].raw.toFixed(2), r.facets[f].pct);
+  }));
+  ITEMS.forEach((it, i) => { cols.push(`item${String(i + 1).padStart(2, "0")}_${it.facet}${it.key < 0 ? "_r" : ""}`); vals.push(state.answers[i]); });
+  const csv = [cols, vals].map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const slug = (state.name || "results").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "results";
+  a.href = url;
+  a.download = `big-five-${slug}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---------- init ---------- */
+window.addEventListener("beforeprint", () => document.querySelectorAll("details").forEach(d => { d.open = true; }));
+if (CONFIG.course){ el.course.textContent = CONFIG.course; }
+$("hero-curve").innerHTML = heroSVG();
+buildScale();
+el.start.addEventListener("click", start);
+el.name.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); start(); } });
+el.back.addEventListener("click", goBack);
+el.brand.addEventListener("click", e => {
+  e.preventDefault();
+  if (!el.results.hidden){ window.scrollTo(0, 0); return; }   // stay on results
+  show("intro");                                                // answers are kept; Start resumes
+});
+
+if (location.hash === "#demo"){
+  state.name = "Demo";
+  state.answers = state.answers.map(() => 1 + Math.floor(Math.random() * 5));
+  finish();
+}
+
+})();
+</script>
+</body>
+</html>
