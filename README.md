@@ -3,6 +3,7 @@
 A 30-statement Big Five personality inventory for classroom use, delivered as a single self-contained HTML file. Students rate themselves on 30 statements and receive percentile estimates for five broad traits and fifteen facets, plus research-based interpretation of how their traits combine.
 
 **Take the inventory:** [https://eecastro.github.io/538-Trait-Inventory/]
+
 **Maintained by:** Eric E Castro, Psychology Dept, St Ignatius College Prep, San Francisco.
 
 **What's in this repository**
