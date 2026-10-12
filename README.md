@@ -2,8 +2,16 @@
 
 A 30-statement Big Five personality inventory for classroom use, delivered as a single self-contained HTML file. Students rate themselves on 30 statements and receive percentile estimates for five broad traits and fifteen facets, plus research-based interpretation of how their traits combine.
 
-**Take the inventory:** [https://eecastro.github.io/538-Trait-inventory/]
-**Maintained by:** Eric E Castro, Psychology Dept, St Ignatius College Prep, San Francisco.
+**Take the inventory:** [https://your-username.github.io/your-repository/]
+**Maintained by:** [Your Name], [Department, Institution]
+
+**What's in this repository**
+
+| File | Purpose |
+|---|---|
+| `index.html` | The inventory students take. |
+| `norms.html` | An instructor tool that turns students' result files into class norms. |
+| `README.md` | This file. |
 
 > This is an independent, unofficial teaching tool. It is not affiliated with or endorsed by FiveThirtyEight, ABC News, Christopher J. Soto, Oliver P. John, or the Colby College or UC Berkeley personality labs.
 
@@ -37,7 +45,7 @@ This project reconstructs the *format* of the FiveThirtyEight quiz. It does not 
 - **The statements come from the IPIP, not the BFI-2.** The 30 items were drawn from or adapted from the International Personality Item Pool (Goldberg et al., 2006), which is in the public domain. Each facet has two items, one worded in each direction, mirroring the design of the BFI-2-S.
 - **Domain labels are the traditional ones.** This version uses *Openness* and *Neuroticism*; the BFI-2 calls these *Open-Mindedness* and *Negative Emotionality*.
 - **No FiveThirtyEight material is used.** None of FiveThirtyEight's code, text, graphics, or data appears in this project. All interpretive text was written for this project.
-- **Percentiles use approximate norms.** They are not FiveThirtyEight's comparison data or official BFI-2 norms (the BFI-2 authors note that there is no official manual with published norms).
+- **Percentiles start from approximate norms.** By default they compare students with approximate adult norms, not with FiveThirtyEight's comparison data or official BFI-2 norms (the BFI-2 authors note that there is no official manual with published norms). Instructors can switch to norms built from their own students (see [Building class norms](#building-class-norms)).
 - **This item set has not been validated as a unit.** Treat results as a learning and self-reflection tool, not as research-grade measurement.
 
 ---
@@ -68,7 +76,7 @@ If you would rather administer Soto and John's own items, the page is built to m
 | Agreeableness | `com` Compassion, `res` Respectfulness, `tru` Trust |
 | Neuroticism | `anx` Anxiety, `dep` Depression, `vol` Emotional Volatility |
 
-Before you do, check the authors' current terms. The [Colby Personality Lab's BFI-2 page](https://www.colby.edu/academics/departments-and-programs/psychology/research-opportunities/personality-lab/the-bfi-2/) grants permission for personal and research use, and the [Berkeley Personality Lab](https://ocf.berkeley.edu/~johnlab/bfi.html) describes the BFI-2 as free for non-commercial research and directs commercial requests to the lab. Neither statement mentions classroom use specifically, so if you plan to post the official items on a public website, it is worth confirming with the authors. Keep the copyright notice with the items and cite both Soto and John (2017) papers.
+Before you do, check the authors' current terms. The [Colby Personality Lab's BFI-2 page](https://www.colby.edu/academics/departments-and-programs/psychology/research-opportunities/personality-lab/the-bfi-2/) grants permission for personal and research use, and the [Berkeley Personality Lab](https://ocf.berkeley.edu/~johnlab/bfi.html) describes the BFI-2 as free for non-commercial research and directs commercial requests to the lab. Neither statement mentions classroom use specifically, so if you plan to post the official items on a public website, it is worth confirming with the authors. Keep the copyright notice with the items and cite both Soto and John (2017) papers. Also change `CONFIG.itemSet` (for example, to `"BFI-2-S"`) and rebuild your class norms from scratch, since scores from different statements aren't interchangeable. The norms builder refuses to mix item sets.
 
 ---
 
@@ -76,21 +84,36 @@ Before you do, check the authors' current terms. The [Colby Personality Lab's BF
 
 **Hosting on GitHub Pages**
 
-1. Put `index.html` and this `README.md` in a public repository.
+1. Put `index.html`, `norms.html`, and this `README.md` in a public repository.
 2. Go to **Settings → Pages**, set the source to *Deploy from a branch*, choose `main` and `/ (root)`, and save.
 3. After a minute or two the inventory is live at `https://<your-username>.github.io/<repository-name>/`.
 
 **Previewing results.** Add `#demo` to the end of the URL to see a results page generated from random answers.
 
-**Collecting results.** Students can print or save their results as a PDF, or download a one-row CSV containing trait and facet scores, percentiles, and raw item responses. Every CSV has the same columns, so they can be stacked into a single spreadsheet.
+**Collecting results.** Students can print or save their results as a PDF, or download a one-row CSV to submit. The CSV contains a random response ID, the item-set label, the course name, the completion date (no time), trait and facet scores, percentiles, and the 30 raw responses. Every CSV has the same columns, so they can be stacked into a single spreadsheet.
 
-**Privacy.** All scoring happens in the student's browser. Nothing is sent to a server, stored, or tracked. The only data that leaves the page is what a student chooses to download or print.
+**Privacy.** The inventory never asks for names, age, gender, or any other personal details, and all scoring happens in the student's browser. Nothing is sent to a server, stored, or tracked. The only data that leaves the page is what a student chooses to download or print. If students submit CSVs through your learning management system, the system will still record who submitted each file, so treat submissions as confidential even though the files themselves are anonymous.
 
 **Customizing.** In the script block near the bottom of `index.html`:
 
 - `CONFIG.course` adds your course name to the header and printouts.
-- `NORMS` holds the means and standard deviations used for percentiles. Once you have class data, you can replace the defaults with your own.
+- `CONFIG.readmeUrl` controls where the "project README" link on the results page points. Leave it blank on GitHub Pages and it links to this repository's README automatically.
+- `CONFIG.itemSet` is a label saved in every CSV so data from different versions of the statements are never pooled. Change it whenever you change the statements.
+- `NORMS` holds the means and standard deviations used for percentiles (see below).
 - `ITEMS` holds the statements (see above).
+
+## Building class norms
+
+By default, percentiles compare students with approximate norms for adults of all ages. Because people in their late teens and early twenties tend to score a little lower on Conscientiousness and Agreeableness and a little higher on Neuroticism than older adults (Soto et al., 2011), the results page tells students this whenever the default norms are in use. Once you've collected results, you can compare students with their peers instead.
+
+1. Open `norms.html` at `https://<your-username>.github.io/<repository-name>/norms.html`.
+2. Drop in the CSV files students submitted. Individual files, a combined spreadsheet, and files from earlier semesters all work. Duplicate submissions are detected by response ID and counted once, and responses flagged as careless are left out by default.
+3. Review the class averages, which are shown next to the built-in adult norms.
+4. Edit the comparison-group wording if you like, copy the generated `NORMS` block, and paste it over the existing `NORMS` block in `index.html`. Commit the change.
+
+After the switch, the results page says students are being compared with their peers and drops the note about adult norms. The builder needs at least 10 usable responses and recommends 50 or more; with fewer, percentiles will shift noticeably as students are added. Use **Download combined data** to keep a running file you can add to each semester.
+
+Nothing in the builder is uploaded; files are read in the browser and cleared when the tab closes. Any name column in CSVs from older versions of the inventory is ignored and never exported.
 
 ---
 
@@ -99,7 +122,7 @@ Before you do, check the authors' current terms. The [Colby Personality Lab's BF
 This inventory is designed for teaching about personality psychology and for student self-reflection. It is not a clinical, diagnostic, or selection instrument, and scores should not be used for grading, placement, admissions, or hiring decisions.
 
 - Scores are based on self-report and reflect how students see themselves.
-- Percentiles compare students with approximate adult norms, not with their classmates.
+- Percentiles compare students with approximate adult norms unless you switch to class norms. Class norms reflect only the students who took the inventory, so they describe that group rather than college students in general.
 - Each facet is measured by only two statements, so facet scores are less reliable than trait scores.
 - Interpretive text summarizes average patterns from published research. It describes tendencies across many people and does not predict any individual's outcomes.
 
@@ -201,6 +224,8 @@ Poropat, A. E. (2009). A meta-analysis of the five-factor model of personality a
 Roberts, B. W., Walton, K. E., & Viechtbauer, W. (2006). Patterns of mean-level change in personality traits across the life course: A meta-analysis of longitudinal studies. *Psychological Bulletin, 132*, 1–25.
 
 Robins, R. W., John, O. P., Caspi, A., Moffitt, T. E., & Stouthamer-Loeber, M. (1996). Resilient, overcontrolled, and undercontrolled boys: Three replicable personality types. *Journal of Personality and Social Psychology, 70*, 157–171.
+
+Soto, C. J., John, O. P., Gosling, S. D., & Potter, J. (2011). Age differences in personality traits from 10 to 65: Big Five domains and facets in a large cross-sectional sample. *Journal of Personality and Social Psychology, 100*, 330–348.
 
 Soto, C. J., & John, O. P. (2017a). The next Big Five Inventory (BFI-2): Developing and assessing a hierarchical model with 15 facets to enhance bandwidth, fidelity, and predictive power. *Journal of Personality and Social Psychology, 113*, 117–143.
 
