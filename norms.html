@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class norms builder | Big Five Personality Inventory</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 26 C9 26 11 6 16 6 S23 26 30 26 Z' fill='%233B6FB6'/%3E%3Ccircle cx='19' cy='10' r='3.5' fill='%231B2333'/%3E%3C/svg%3E">
+<!--
+  CLASS NORMS BUILDER (for instructors)
+  Reads the CSV files students download from index.html, computes class
+  means and standard deviations for the 5 traits and 15 facets, and
+  writes a NORMS block to paste into index.html. Files are read in the
+  browser only; nothing is uploaded. Any name column in older files is
+  ignored and never displayed or exported.
+-->
+<style>
+:root{
+  --paper:#F4F5F2; --surface:#FFFFFF; --ink:#1B2333; --muted:#596274;
+  --rule:#DADDD5; --rule-strong:#B4B9AF; --focus:#2F5FD0;
+  --O:#7A4FD0; --C:#12846D; --E:#E0950A; --A:#D24A70; --N:#3B6FB6;
+  --warn-bg:#FBF0D8; --warn:#E0950A; --bad-bg:#F9E3EA; --bad:#D24A70;
+  --serif:"Iowan Old Style","Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --r-sm:6px; --r:12px;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#131923; --surface:#1B2330; --ink:#E7EAF0; --muted:#A2ABBA;
+    --rule:#2C3545; --rule-strong:#475265; --focus:#8DB4EA;
+    --O:#9673E6; --C:#24A285; --E:#E5A426; --A:#E0668A; --N:#5A8BD0;
+    --warn-bg:#372C15; --bad-bg:#3B212D;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.2;margin:0}
+p{margin:0 0 1em}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:4px}
+[hidden]{display:none !important}
+.wrap{max-width:860px;margin:0 auto;padding:0 22px}
+.stripe{display:flex;height:5px}
+.stripe span{flex:1}
+.masthead .wrap{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-top:14px;padding-bottom:14px;border-bottom:1px solid var(--rule)}
+.brand{font-family:var(--serif);font-weight:600;font-size:1.05rem;text-decoration:none;color:inherit}
+.tag{color:var(--muted);font-size:.9rem}
+.intro{padding:44px 0 8px}
+.intro h1{font-size:clamp(2rem,5vw,2.8rem);letter-spacing:-.01em;margin-bottom:.4em}
+.lead{font-size:1.15rem;max-width:62ch}
+.step{margin-top:48px}
+.step > h2{font-size:1.5rem;margin-bottom:.4em}
+.muted{color:var(--muted)}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;min-height:150px;padding:24px;border:2px dashed var(--rule-strong);border-radius:var(--r);background:var(--surface);cursor:pointer;margin:18px 0 10px}
+.drop.over{border-color:var(--ink)}
+.drop strong{font-family:var(--serif);font-size:1.2rem;font-weight:600}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop:focus-within{outline:3px solid var(--focus);outline-offset:3px}
+.link-btn{font:inherit;background:none;border:0;padding:0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link-btn:hover{color:var(--ink)}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.95rem}
+.btn{font:inherit;font-weight:650;font-size:.95rem;cursor:pointer;border-radius:999px;padding:9px 18px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper)}
+.btn.secondary{background:transparent;color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:16px 0}
+.stat{background:var(--surface);padding:14px 16px}
+.stat b{display:block;font-family:var(--serif);font-size:1.8rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.88rem}
+.note{padding:12px 16px;border-left:4px solid var(--warn);background:var(--warn-bg);border-radius:0 var(--r-sm) var(--r-sm) 0;margin:12px 0;max-width:70ch}
+.note.bad{border-left-color:var(--bad);background:var(--bad-bg)}
+.note p{margin:0}
+.check{display:flex;gap:10px;align-items:flex-start;margin:14px 0;max-width:70ch}
+.check input{margin-top:5px;width:18px;height:18px;flex:none}
+.files{font-size:.9rem;color:var(--muted);margin:8px 0 0;padding-left:1.2em}
+.tbl-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--rule);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{padding:8px 14px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-weight:650;color:var(--muted);font-size:.85rem;background:var(--paper)}
+tr.domain td{font-weight:700;font-family:var(--serif);font-size:1.02rem;border-top:2px solid var(--rule-strong)}
+tr.domain td:first-child{padding-left:10px;border-left:5px solid var(--c)}
+tr.facet td:first-child{padding-left:30px}
+tbody tr:last-child td{border-bottom:0}
+.t-O{--c:var(--O)} .t-C{--c:var(--C)} .t-E{--c:var(--E)} .t-A{--c:var(--A)} .t-N{--c:var(--N)}
+.field{margin:16px 0;max-width:640px}
+.field label{display:block;font-weight:650;margin-bottom:4px}
+.field .hint{display:block;font-weight:400;color:var(--muted);font-size:.9rem}
+.field input{font:inherit;width:100%;padding:9px 12px;border:1.5px solid var(--rule-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--ink)}
+pre{font-family:var(--mono);font-size:.85rem;line-height:1.5;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:16px 18px;overflow-x:auto;margin:14px 0}
+.howto{max-width:70ch;padding-left:1.3em}
+.howto li{margin-bottom:.4em}
+code{font-family:var(--mono);font-size:.9em}
+.copied{color:var(--muted);font-size:.9rem;margin-left:10px}
+.site-foot{margin-top:64px;padding:22px 0 40px;border-top:1px solid var(--rule);color:var(--muted);font-size:.88rem}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="stripe" aria-hidden="true"><span class="t-O" style="background:var(--O)"></span><span class="t-C" style="background:var(--C)"></span><span class="t-E" style="background:var(--E)"></span><span class="t-A" style="background:var(--A)"></span><span class="t-N" style="background:var(--N)"></span></div>
+  <div class="wrap"><a class="brand" href="./">Big Five Personality Inventory</a><span class="tag">For instructors</span></div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Build class norms</h1>
+    <p class="lead">Turn your students&rsquo; result files into norms based on your own class, so percentiles compare each student with peers instead of with adults of all ages. Files are read in this browser tab and never uploaded.</p>
+  </section>
+
+  <section class="step" aria-labelledby="s1">
+    <h2 id="s1">Add result files</h2>
+    <p class="muted" style="max-width:66ch">Add the CSV files students downloaded from the inventory. Individual files, a spreadsheet you&rsquo;ve already combined, and files from earlier semesters all work. Duplicate submissions are detected and counted once.</p>
+    <label class="drop" id="drop">
+      <input type="file" id="files" accept=".csv,text/csv" multiple>
+      <strong>Drop CSV files here</strong>
+      <span class="muted">or click to choose files</span>
+    </label>
+    <div class="row-actions">
+      <button class="link-btn" id="sample" type="button">Try it with 120 simulated responses</button>
+      <button class="link-btn" id="clear" type="button" hidden>Clear all files</button>
+    </div>
+    <ul class="files" id="file-list"></ul>
+  </section>
+
+  <section class="step" id="found" hidden aria-labelledby="s2">
+    <h2 id="s2">What was found</h2>
+    <div class="stats" id="stats"></div>
+    <div id="notes"></div>
+    <label class="check"><input type="checkbox" id="exclude" checked><span>Leave out responses flagged as careless: the same answer to 24 or more statements, or agreeing or disagreeing with nearly everything, including statements that contradict each other.</span></label>
+    <p class="muted" style="max-width:66ch">Save the combined data to keep a running file you can add next semester&rsquo;s results to, for larger and more stable norms. It contains only response IDs, item set, course, date, and the 30 answers.</p>
+    <p><button class="btn secondary" id="combined" type="button">Download combined data (CSV)</button></p>
+  </section>
+
+  <section class="step" id="table-step" hidden aria-labelledby="s3">
+    <h2 id="s3">Class averages</h2>
+    <p class="muted" style="max-width:66ch">Scores are on the 1&ndash;5 response scale. The last column shows how far your class average sits from the built-in adult norms, in standard deviations. Small differences of 0.2 or less are typical noise.</p>
+    <div class="tbl-wrap"><table id="tbl"></table></div>
+  </section>
+
+  <section class="step" id="out-step" hidden aria-labelledby="s4">
+    <h2 id="s4">Your new norms</h2>
+    <div class="field">
+      <label for="desc">Comparison group <span class="hint">Students will see: &ldquo;Percentiles are estimates that compare you with &hellip;&rdquo;</span></label>
+      <input id="desc" type="text" maxlength="160">
+    </div>
+    <ol class="howto">
+      <li>Copy the block below.</li>
+      <li>Open <code>index.html</code> in your repository (on GitHub, open the file and choose the pencil icon to edit it).</li>
+      <li>Find the block that begins with <code>const NORMS = {</code> and ends with <code>};</code>, and replace all of it with what you copied.</li>
+      <li>Commit the change. The live page updates within a minute or two.</li>
+    </ol>
+    <p><button class="btn" id="copy" type="button">Copy norms block</button><span class="copied" id="copied" aria-live="polite"></span></p>
+    <pre id="code" tabindex="0"></pre>
+  </section>
+</main>
+
+<footer class="wrap site-foot">Nothing on this page is uploaded or stored. Closing the tab clears everything.</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* Built-in adult norms from index.html, used for comparison only. */
+const DEFAULT_NORMS = {
+  domains: { O:{m:3.60,sd:0.70}, C:{m:3.52,sd:0.70}, E:{m:3.22,sd:0.78}, A:{m:3.83,sd:0.58}, N:{m:2.88,sd:0.82} },
+  facets: {
+    int:{m:3.60,sd:0.95}, aes:{m:3.35,sd:1.05}, cre:{m:3.85,sd:0.90},
+    org:{m:3.45,sd:1.00}, pro:{m:3.20,sd:0.95}, rsp:{m:3.90,sd:0.75},
+    soc:{m:3.15,sd:1.05}, ass:{m:3.20,sd:0.95}, ene:{m:3.30,sd:0.90},
+    com:{m:3.95,sd:0.80}, res:{m:4.10,sd:0.75}, tru:{m:3.45,sd:0.85},
+    anx:{m:3.35,sd:1.00}, dep:{m:2.55,sd:0.95}, vol:{m:2.75,sd:1.00}
+  }
+};
+const TRAITS = [
+  { k:"O", name:"Openness",          facets:[["int","Intellectual Curiosity"],["aes","Aesthetic Sensitivity"],["cre","Creative Imagination"]] },
+  { k:"C", name:"Conscientiousness", facets:[["org","Organization"],["pro","Productiveness"],["rsp","Responsibility"]] },
+  { k:"E", name:"Extraversion",      facets:[["soc","Sociability"],["ass","Assertiveness"],["ene","Energy Level"]] },
+  { k:"A", name:"Agreeableness",     facets:[["com","Compassion"],["res","Respectfulness"],["tru","Trust"]] },
+  { k:"N", name:"Neuroticism",       facets:[["anx","Anxiety"],["dep","Depression"],["vol","Emotional Volatility"]] }
+];
+const FACET_CODES = TRAITS.flatMap(t => t.facets.map(f => f[0]));
+const MIN_N = 10, GOOD_N = 50;
+
+const $ = id => document.getElementById(id);
+const store = { records: new Map(), noId: [], files: [], problems: [] };
+let descTouched = false;
+
+/* ---------- CSV parsing ---------- */
+function parseCSV(text){
+  const rows = []; let row = [], cell = "", q = false;
+  text = text.replace(/^\uFEFF/, "");
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){
+      if (c === '"'){ if (text[i + 1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ","){ row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r"){
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += c;
+  }
+  if (cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ""));
+}
+const ITEM_RE = /^item(\d+)_([a-z]{3})(_r)?$/i;
+
+function ingest(fileName, text){
+  const rows = parseCSV(text);
+  let header = null, cols = null, added = 0, dupes = 0, incomplete = 0;
+  const readHeader = r => {
+    const h = r.map(x => x.trim().toLowerCase());
+    const items = [];
+    h.forEach((name, idx) => { const m = name.match(ITEM_RE); if (m && FACET_CODES.includes(m[2].toLowerCase())) items.push({ idx, n: +m[1], facet: m[2].toLowerCase(), rev: !!m[3] }); });
+    if (!items.length) return null;
+    items.sort((a, b) => a.n - b.n);
+    return { h, items, id: h.indexOf("response_id"), set: h.indexOf("item_set"), course: h.indexOf("course"), date: h.indexOf("completed") };
+  };
+  for (const r of rows){
+    const maybe = readHeader(r);
+    if (maybe){ header = r; cols = maybe; continue; }   // header row (also catches repeated headers in stacked files)
+    if (!cols) continue;
+    const resp = cols.items.map(it => parseInt(String(r[it.idx] || "").trim(), 10));
+    if (resp.some(v => !(v >= 1 && v <= 5))){ incomplete++; continue; }
+    const rec = {
+      id: cols.id >= 0 ? String(r[cols.id] || "").trim() : "",
+      itemSet: cols.set >= 0 ? (String(r[cols.set] || "").trim() || "(not recorded)") : "(not recorded)",
+      course: cols.course >= 0 ? String(r[cols.course] || "").trim() : "",
+      date: cols.date >= 0 ? String(r[cols.date] || "").trim().slice(0, 10) : "",
+      items: cols.items.map((it, i) => ({ n: it.n, facet: it.facet, rev: it.rev, v: resp[i] }))
+    };
+    const facetsPresent = new Set(rec.items.map(x => x.facet));
+    if (FACET_CODES.some(f => !facetsPresent.has(f))){ incomplete++; continue; }
+    if (rec.id){
+      if (store.records.has(rec.id)){ dupes++; continue; }
+      store.records.set(rec.id, rec);
+    } else store.noId.push(rec);
+    added++;
+  }
+  if (!cols) store.problems.push(`${fileName}: no inventory item columns found, so it was skipped.`);
+  store.files.push({ name: fileName, added, dupes, incomplete });
+}
+
+/* ---------- scoring ---------- */
+function scoreRecord(rec){
+  const sums = {}, counts = {};
+  rec.items.forEach(it => { const v = it.rev ? 6 - it.v : it.v; sums[it.facet] = (sums[it.facet] || 0) + v; counts[it.facet] = (counts[it.facet] || 0) + 1; });
+  const facets = {}; FACET_CODES.forEach(f => { facets[f] = sums[f] / counts[f]; });
+  const domains = {}; TRAITS.forEach(t => { domains[t.k] = t.facets.reduce((s, f) => s + facets[f[0]], 0) / t.facets.length; });
+  const raw = rec.items.map(it => it.v);
+  const tally = [0,0,0,0,0,0]; raw.forEach(v => tally[v]++);
+  const modal = Math.max(...tally), mean = raw.reduce((s, v) => s + v, 0) / raw.length;
+  const careless = modal >= Math.ceil(raw.length * 0.8) || mean >= 4.1 || mean <= 1.9;
+  return { facets, domains, careless };
+}
+function meanSd(arr){
+  const n = arr.length, m = arr.reduce((s, v) => s + v, 0) / n;
+  const sd = n > 1 ? Math.sqrt(arr.reduce((s, v) => s + (v - m) * (v - m), 0) / (n - 1)) : 0;
+  return { m, sd };
+}
+const f2 = v => v.toFixed(2);
+
+/* ---------- render ---------- */
+function allRecords(){ return [...store.records.values(), ...store.noId]; }
+
+function render(){
+  const recs = allRecords();
+  $("clear").hidden = !store.files.length;
+  $("file-list").innerHTML = store.files.map(f => `<li>${esc(f.name)}: ${f.added} added${f.dupes ? `, ${f.dupes} duplicate${f.dupes > 1 ? "s" : ""} skipped` : ""}${f.incomplete ? `, ${f.incomplete} incomplete row${f.incomplete > 1 ? "s" : ""} skipped` : ""}</li>`).join("");
+  if (!store.files.length){ ["found", "table-step", "out-step"].forEach(id => $(id).hidden = true); return; }
+
+  const scored = recs.map(r => Object.assign({ rec: r }, scoreRecord(r)));
+  const flagged = scored.filter(s => s.careless).length;
+  const exclude = $("exclude").checked;
+  const used = scored.filter(s => !(exclude && s.careless));
+  const dupes = store.files.reduce((s, f) => s + f.dupes, 0);
+  const incomplete = store.files.reduce((s, f) => s + f.incomplete, 0);
+
+  $("found").hidden = false;
+  $("stats").innerHTML = [
+    [recs.length, "unique responses"], [dupes, "duplicates skipped"], [incomplete, "incomplete rows skipped"],
+    [flagged, "flagged as careless"], [used.length, "used for norms"]
+  ].map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+
+  const notes = store.problems.map(p => `<div class="note bad"><p>${esc(p)}</p></div>`);
+  // Item-set labels (older files have none) and the item-column layout must agree.
+  const sets = {}; recs.forEach(r => { if (r.itemSet !== "(not recorded)") sets[r.itemSet] = (sets[r.itemSet] || 0) + 1; });
+  const setNames = Object.keys(sets);
+  const layouts = new Set(recs.map(r => r.items.map(it => it.n + it.facet + (it.rev ? "r" : "")).join("|")));
+  if (setNames.length > 1){
+    notes.push(`<div class="note bad"><p><strong>These files come from more than one version of the inventory</strong> (${setNames.map(k => `${esc(k)}: ${sets[k]}`).join("; ")}). Scores from different statements aren&rsquo;t interchangeable, so build norms from one version at a time.</p></div>`);
+  } else if (layouts.size > 1){
+    notes.push(`<div class="note bad"><p><strong>Files have different sets of statements.</strong> Build norms only from files made with the same version of the inventory.</p></div>`);
+  }
+  if (store.noId.length){
+    notes.push(`<div class="note"><p>${store.noId.length} response${store.noId.length > 1 ? "s come" : " comes"} from an earlier version of the inventory without a response ID, so ${store.noId.length > 1 ? "they" : "it"} can&rsquo;t be checked for duplicates.</p></div>`);
+  }
+  if (used.length < MIN_N){
+    notes.push(`<div class="note bad"><p><strong>Not enough responses yet.</strong> At least ${MIN_N} usable responses are needed to build norms, and ${GOOD_N} or more is better.</p></div>`);
+  } else if (used.length < GOOD_N){
+    notes.push(`<div class="note"><p><strong>${used.length} responses is enough to try, but percentiles will shift noticeably as more students are added.</strong> Consider pooling semesters until you have ${GOOD_N} or more.</p></div>`);
+  }
+  $("notes").innerHTML = notes.join("");
+
+  if (used.length < MIN_N){ $("table-step").hidden = true; $("out-step").hidden = true; return; }
+
+  const norms = { domains: {}, facets: {} };
+  TRAITS.forEach(t => {
+    norms.domains[t.k] = meanSd(used.map(s => s.domains[t.k]));
+    t.facets.forEach(([f]) => { norms.facets[f] = meanSd(used.map(s => s.facets[f])); });
+  });
+
+  const row = (cls, label, cur, def) => {
+    const diff = (cur.m - def.m) / def.sd;
+    return `<tr class="${cls}"><td>${label}</td><td>${f2(cur.m)}</td><td>${f2(cur.sd)}</td><td>${f2(def.m)}</td><td>${f2(def.sd)}</td><td>${Math.abs(diff) < 0.005 ? "0.00" : (diff > 0 ? "+" : "&minus;") + f2(Math.abs(diff))}</td></tr>`;
+  };
+  let html = `<thead><tr><th>Trait or facet</th><th>Class mean</th><th>Class SD</th><th>Built-in mean</th><th>Built-in SD</th><th>Difference (SD)</th></tr></thead><tbody>`;
+  TRAITS.forEach(t => {
+    html += row(`domain t-${t.k}`, t.name, norms.domains[t.k], DEFAULT_NORMS.domains[t.k]);
+    t.facets.forEach(([f, nm]) => { html += row("facet", nm, norms.facets[f], DEFAULT_NORMS.facets[f]); });
+  });
+  $("tbl").innerHTML = html + "</tbody>";
+  $("table-step").hidden = false;
+
+  const courses = {}; used.forEach(s => { const c = s.rec.course; if (c) courses[c] = (courses[c] || 0) + 1; });
+  const topCourse = Object.keys(courses).sort((a, b) => courses[b] - courses[a])[0];
+  if (!descTouched){
+    $("desc").value = `students who took this inventory in ${topCourse || "this course"} (${used.length} responses)`;
+  }
+  store.current = { norms, used };
+  writeCode();
+  $("out-step").hidden = false;
+}
+
+function writeCode(){
+  if (!store.current) return;
+  const { norms, used } = store.current;
+  const sdFloor = v => Math.max(v, 0.2);   // guards against near-zero SDs in very small samples
+  const fmt = o => `{ m: ${f2(o.m)}, sd: ${f2(sdFloor(o.sd))} }`;
+  const d = norms.domains, f = norms.facets;
+  const today = new Date().toISOString().slice(0, 10);
+  const desc = $("desc").value.trim() || "students in this course";
+  const lines = [
+    `/* Class norms built ${today} from ${used.length} responses with norms.html. */`,
+    `const NORMS = {`,
+    `  description: ${JSON.stringify(desc)},`,
+    `  peers: true,`,
+    `  domains: {`,
+    `    O: ${fmt(d.O)}, C: ${fmt(d.C)}, E: ${fmt(d.E)},`,
+    `    A: ${fmt(d.A)}, N: ${fmt(d.N)}`,
+    `  },`,
+    `  facets: {`,
+    ...TRAITS.map((t, i) => `    ${t.facets.map(([k]) => `${k}: ${fmt(f[k])}`).join(", ")}${i < TRAITS.length - 1 ? "," : ""}`),
+    `  }`,
+    `};`
+  ];
+  $("code").textContent = lines.join("\n");
+}
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
+
+/* ---------- combined export ---------- */
+function downloadCombined(){
+  const recs = allRecords();
+  if (!recs.length) return;
+  const items = recs[0].items;
+  const cols = ["response_id", "item_set", "course", "completed", ...items.map(it => `item${String(it.n).padStart(2, "0")}_${it.facet}${it.rev ? "_r" : ""}`)];
+  const cell = v => { const s = String(v == null ? "" : v); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const lines = [cols.join(",")];
+  recs.forEach(r => {
+    if (r.items.length !== items.length) return;
+    lines.push([r.id, r.itemSet, r.course, r.date, ...r.items.map(it => it.v)].map(cell).join(","));
+  });
+  const blob = new Blob([lines.join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `big-five-combined-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---------- simulated data ---------- */
+const SAMPLE_HEADER = ["soc","com","org_r","anx","aes","ass_r","res_r","pro","dep_r","int","ene","tru","rsp_r","vol","cre_r","soc_r","com_r","org","anx_r","aes_r","ass","res","pro_r","dep","int_r","ene_r","tru_r","rsp","vol_r","cre"];
+function randn(){ let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function sampleCSV(n){
+  const cols = ["response_id", "item_set", "course", "completed", ...SAMPLE_HEADER.map((c, i) => `item${String(i + 1).padStart(2, "0")}_${c}`)];
+  const lines = [cols.join(",")];
+  for (let k = 0; k < n; k++){
+    const dz = {}; TRAITS.forEach(t => { dz[t.k] = randn(); });
+    const fz = {}; TRAITS.forEach(t => t.facets.forEach(([f]) => { fz[f] = 0.75 * dz[t.k] + 0.66 * randn(); }));
+    const resp = SAMPLE_HEADER.map(c => {
+      const [f, r] = c.split("_"); const N = DEFAULT_NORMS.facets[f];
+      let v = Math.round(N.m + N.sd * (0.8 * fz[f] + 0.6 * randn()));
+      v = Math.max(1, Math.min(5, v));
+      return r ? 6 - v : v;
+    });
+    lines.push([`sim${k.toString(16).padStart(4, "0")}`, "IPIP-30 v1", "Simulated class", new Date().toISOString().slice(0, 10), ...resp].join(","));
+  }
+  return lines.join("\n");
+}
+
+/* ---------- wiring ---------- */
+async function addFiles(fileList){
+  const list = Array.from(fileList);   // copy first: the input is cleared right after
+  for (const file of list){
+    try { ingest(file.name, await file.text()); }
+    catch (e){ store.problems.push(`${file.name}: couldn't be read (${e.message}).`); }
+  }
+  render();
+}
+$("files").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
+const drop = $("drop");
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+$("sample").addEventListener("click", () => { ingest("simulated-responses.csv", sampleCSV(120)); render(); });
+$("clear").addEventListener("click", () => {
+  store.records.clear(); store.noId = []; store.files = []; store.problems = []; store.current = null; descTouched = false;
+  render();
+});
+$("exclude").addEventListener("change", render);
+$("desc").addEventListener("input", () => { descTouched = true; writeCode(); });
+$("copy").addEventListener("click", async () => {
+  const text = $("code").textContent;
+  try { await navigator.clipboard.writeText(text); $("copied").textContent = "Copied."; }
+  catch (e){
+    const r = document.createRange(); r.selectNodeContents($("code"));
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    $("copied").textContent = "Selected. Press Ctrl+C or \u2318C to copy.";
+  }
+  setTimeout(() => { $("copied").textContent = ""; }, 4000);
+});
+$("combined").addEventListener("click", downloadCombined);
+})();
+</script>
+</body>
+</html>
