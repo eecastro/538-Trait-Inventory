@@ -26,16 +26,29 @@
   Add #demo to the end of the URL to see results for random answers.
 
   COLLECTING RESULTS
-  Students can print / save as PDF, or download a one-row CSV
-  (scores, percentiles, and raw item responses) to submit. The CSVs
-  share the same columns, so they can be stacked into one spreadsheet.
+  The inventory never asks for names. Students can print / save as
+  PDF, or download a one-row CSV (scores, percentiles, raw item
+  responses, a random response ID, and the completion date) to submit.
+  The CSVs share the same columns, so they can be stacked into one
+  spreadsheet.
+
+  CLASS NORMS
+  Open norms.html (in this repository), drop in the students' CSVs,
+  and it produces a replacement NORMS block for this file. Percentiles
+  then compare students with their peers instead of with adults.
 
   CUSTOMIZING (all in the <script> block near the bottom)
   - CONFIG.course   : course name shown in the header and printouts.
+  - CONFIG.readmeUrl: where the "project README" link in the results
+                      points. Leave blank on GitHub Pages and it links to
+                      the hosting repository's README automatically.
+  - CONFIG.itemSet  : a label saved with every CSV so data from
+                      different versions of the items are never pooled.
+                      Change it if you change the statements.
   - NORMS           : the means and SDs used to turn scores into
                       percentiles. The defaults are approximations of
                       typical adult online samples. Once you have class
-                      data you can replace them with your own.
+                      data, use norms.html to generate a replacement.
   - ITEMS           : the 30 statements. Each has a facet code and a
                       key (1 = scored as written, -1 = reverse-scored).
                       You can swap in items from another instrument,
@@ -43,9 +56,9 @@
                       codes and give each facet the same number of items.
 
   ITEM SOURCE
-  Statements come from the International Personality Item Pool
-  (ipip.ori.org), which is in the public domain, lightly edited to
-  read as full sentences and arranged to mirror the 15-facet structure
+  Statements are drawn from or adapted from the International
+  Personality Item Pool (ipip.ori.org), which is in the public domain,
+  edited to read as full sentences and arranged to mirror the 15-facet structure
   of the BFI-2 (Soto & John, 2017).
 =====================================================================
 -->
@@ -122,11 +135,6 @@ a{color:inherit}
 .before h2{font-size:1.3rem;margin-bottom:.5em}
 .before ul{margin:0;padding-left:1.2em}
 .before li{margin-bottom:.35em}
-.field{margin:0 0 28px;max-width:360px}
-.field label{display:block;font-weight:600;margin-bottom:6px}
-.field .hint{display:block;font-weight:400;color:var(--muted);font-size:.9rem}
-.field input{font:inherit;width:100%;padding:10px 12px;border:1.5px solid var(--rule-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--ink)}
-.field input:focus-visible{outline-offset:1px}
 .fine{color:var(--muted);font-size:.9rem;max-width:60ch;margin-top:22px}
 
 /* Quiz */
@@ -323,14 +331,9 @@ a{color:inherit}
       </ul>
     </div>
 
-    <div class="field">
-      <label for="name">Your name <span class="hint">Optional. It appears only on your printout or download.</span></label>
-      <input id="name" type="text" autocomplete="given-name" maxlength="60">
-    </div>
-
     <button class="btn" id="start" type="button">Start the inventory</button>
 
-    <p class="fine">Your answers stay in this browser tab. Nothing is sent or stored anywhere unless you download or print your results. This is a tool for learning about personality psychology and reflecting on yourself, not a clinical or diagnostic assessment.</p>
+    <p class="fine">This inventory doesn&rsquo;t ask for your name, and your answers stay in this browser tab. Nothing is sent or stored anywhere unless you download or print your results. This is a tool for learning about personality psychology and reflecting on yourself, not a clinical or diagnostic assessment.</p>
   </section>
 
   <!-- ============ QUIZ ============ -->
@@ -358,7 +361,11 @@ a{color:inherit}
    CONFIGURATION — instructors can edit this block
    ================================================================= */
 const CONFIG = {
-  course: ""   // e.g. "PSY 101, Fall 2026". Shown in the header and on printouts.
+  course: "",    // e.g. "PSY 101, Fall 2026". Shown in the header and on printouts.
+  readmeUrl: "",  // Leave blank to link automatically to the README of the GitHub
+                  // repository hosting this page; or paste a full URL here.
+  itemSet: "IPIP-30 v1"  // Saved with every CSV. Change it if you change the statements,
+                         // so norms are never built from a mix of item versions.
 };
 
 /* Response scale (1–5) */
@@ -410,10 +417,17 @@ const ITEMS = [
 
 /* =================================================================
    NORMS — mean and SD on the 1–5 scale, used to estimate percentiles.
-   These are approximations of typical adult online samples. Replace
-   them with your own class means/SDs if you collect data.
+   The defaults approximate typical adult online samples. To compare
+   students with their peers instead, build a replacement block with
+   norms.html and paste it over this one.
+   - description: completes the sentence "Percentiles are estimates
+     that compare you with ..."
+   - peers: true when the norms come from students; this turns off the
+     results note about being compared with adults of all ages.
    ================================================================= */
 const NORMS = {
+  description: "adults of all ages, using approximate norms",
+  peers: false,
   domains: {
     O: { m: 3.60, sd: 0.70 }, C: { m: 3.52, sd: 0.70 }, E: { m: 3.22, sd: 0.78 },
     A: { m: 3.83, sd: 0.58 }, N: { m: 2.88, sd: 0.82 }
@@ -685,13 +699,16 @@ const REFERENCES = [
   "Hudson, N. W., & Fraley, R. C. (2015). Volitional personality trait change: Can people choose to change their personality traits? <i>Journal of Personality and Social Psychology, 109</i>, 490&ndash;507.",
   "Jones, S. E., Miller, J. D., & Lynam, D. R. (2011). Personality, antisocial behavior, and aggression: A meta-analytic review. <i>Journal of Criminal Justice, 39</i>, 329&ndash;337.",
   "Judge, T. A., Bono, J. E., Ilies, R., & Gerhardt, M. W. (2002). Personality and leadership: A qualitative and quantitative review. <i>Journal of Applied Psychology, 87</i>, 765&ndash;780.",
+  "Koerth-Baker, M. (2018). Most personality quizzes are junk science. I found one that isn&rsquo;t. <i>FiveThirtyEight</i>. (No longer online.)",
+  "Koerth-Baker, M., & Wolfe, J. (2019). Most personality quizzes are junk science. Take one that isn&rsquo;t [Interactive quiz]. <i>FiveThirtyEight</i>. (No longer online.)",
   "Kotov, R., Gamez, W., Schmidt, F., & Watson, D. (2010). Linking &ldquo;big&rdquo; personality traits to anxiety, depressive, and substance use disorders: A meta-analysis. <i>Psychological Bulletin, 136</i>, 768&ndash;821.",
   "Ozer, D. J., & Benet-Mart&iacute;nez, V. (2006). Personality and the prediction of consequential outcomes. <i>Annual Review of Psychology, 57</i>, 401&ndash;421.",
   "Poropat, A. E. (2009). A meta-analysis of the five-factor model of personality and academic performance. <i>Psychological Bulletin, 135</i>, 322&ndash;338.",
   "Roberts, B. W., Walton, K. E., & Viechtbauer, W. (2006). Patterns of mean-level change in personality traits across the life course: A meta-analysis of longitudinal studies. <i>Psychological Bulletin, 132</i>, 1&ndash;25.",
   "Robins, R. W., John, O. P., Caspi, A., Moffitt, T. E., & Stouthamer-Loeber, M. (1996). Resilient, overcontrolled, and undercontrolled boys: Three replicable personality types. <i>Journal of Personality and Social Psychology, 70</i>, 157&ndash;171.",
-  "Soto, C. J., & John, O. P. (2017). The next Big Five Inventory (BFI-2): Developing and assessing a hierarchical model with 15 facets to enhance bandwidth, fidelity, and predictive power. <i>Journal of Personality and Social Psychology, 113</i>, 117&ndash;143.",
-  "Soto, C. J., & John, O. P. (2017). Short and extra-short forms of the Big Five Inventory&ndash;2: The BFI-2-S and BFI-2-XS. <i>Journal of Research in Personality, 68</i>, 69&ndash;81.",
+  "Soto, C. J., John, O. P., Gosling, S. D., & Potter, J. (2011). Age differences in personality traits from 10 to 65: Big Five domains and facets in a large cross-sectional sample. <i>Journal of Personality and Social Psychology, 100</i>, 330&ndash;348.",
+  "Soto, C. J., & John, O. P. (2017a). The next Big Five Inventory (BFI-2): Developing and assessing a hierarchical model with 15 facets to enhance bandwidth, fidelity, and predictive power. <i>Journal of Personality and Social Psychology, 113</i>, 117&ndash;143.",
+  "Soto, C. J., & John, O. P. (2017b). Short and extra-short forms of the Big Five Inventory&ndash;2: The BFI-2-S and BFI-2-XS. <i>Journal of Research in Personality, 68</i>, 69&ndash;81.",
   "Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review of quintessential self-regulatory failure. <i>Psychological Bulletin, 133</i>, 65&ndash;94.",
   "Steel, P., Schmidt, J., & Shultz, J. (2008). Refining the relationship between personality and subjective well-being. <i>Psychological Bulletin, 134</i>, 138&ndash;161.",
   "Stoeber, J., & Otto, K. (2006). Positive conceptions of perfectionism: Approaches, evidence, challenges. <i>Personality and Social Psychology Review, 10</i>, 295&ndash;319.",
@@ -704,15 +721,29 @@ const REFERENCES = [
 const $ = id => document.getElementById(id);
 const el = {
   intro: $("intro"), quiz: $("quiz"), results: $("results"),
-  start: $("start"), name: $("name"), back: $("back"), scale: $("scale"),
+  start: $("start"), back: $("back"), scale: $("scale"),
   qText: $("q-text"), qCount: $("q-count"), qLeft: $("q-left"),
   progress: $("progress"), fill: $("progress-fill"), course: $("course"), brand: $("brand")
 };
 const N_ITEMS = ITEMS.length;
-const state = { i: 0, answers: new Array(N_ITEMS).fill(null), name: "", locked: false, result: null, completedAt: null };
+const state = { i: 0, answers: new Array(N_ITEMS).fill(null), locked: false, result: null, completedAt: null, responseId: "" };
 const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ---------- helpers ---------- */
+// Link to the project README. On GitHub Pages (username.github.io/repo/), this
+// points to the repository's rendered README; elsewhere it falls back to a
+// README.md file sitting next to this page.
+function readmeHref(){
+  if (CONFIG.readmeUrl) return CONFIG.readmeUrl;
+  const host = location.hostname.toLowerCase();
+  if (host.endsWith(".github.io")){
+    const user = host.slice(0, -".github.io".length);
+    const first = location.pathname.split("/").filter(Boolean)[0];
+    const repo = first && !/\.html?$/i.test(first) ? first : host;
+    return `https://github.com/${user}/${repo}#readme`;
+  }
+  return "README.md";
+}
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
 function ordSuffix(n){ const v = n % 100; if (v >= 11 && v <= 13) return "th"; return ({ 1:"st", 2:"nd", 3:"rd" }[n % 10]) || "th"; }
@@ -737,7 +768,15 @@ function dirWord(z){
   return z >= 0 ? "Slightly high" : "Slightly low";
 }
 function comparePhrase(p){
-  return p >= 50 ? `Higher than about ${p}% of people` : `Lower than about ${100 - p}% of people`;
+  const group = NORMS.peers ? "students in the comparison group" : "people";
+  return p >= 50 ? `Higher than about ${p}% of ${group}` : `Lower than about ${100 - p}% of ${group}`;
+}
+// Random, non-identifying ID so duplicate CSVs can be detected when building norms.
+function randomId(){
+  const a = new Uint8Array(6);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+  else for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256);
+  return Array.from(a, b => b.toString(16).padStart(2, "0")).join("");
 }
 function listJoin(arr){
   if (arr.length <= 1) return arr.join("");
@@ -887,7 +926,6 @@ function goBack(){
 }
 
 function start(){
-  state.name = el.name.value.trim();
   const firstOpen = state.answers.findIndex(a => a === null);
   state.i = firstOpen === -1 ? 0 : firstOpen;
   show("quiz");
@@ -898,6 +936,7 @@ function start(){
 function finish(){
   state.result = score(state.answers);
   state.completedAt = new Date();
+  state.responseId = randomId();
   renderResults();
   show("results");
   const h = $("res-title"); if (h) h.focus({ preventScroll: true });
@@ -906,7 +945,7 @@ function finish(){
 function restart(){
   if (!window.confirm("Start over? Your current answers will be cleared.")) return;
   state.answers = new Array(N_ITEMS).fill(null);
-  state.i = 0; state.result = null; state.completedAt = null;
+  state.i = 0; state.result = null; state.completedAt = null; state.responseId = "";
   el.results.innerHTML = "";
   show("intro");
   el.start.focus();
@@ -924,13 +963,12 @@ document.addEventListener("keydown", e => {
 /* ---------- results ---------- */
 function renderResults(){
   const r = state.result, D = r.domains, F = r.facets;
-  const who = state.name ? `${esc(state.name)}\u2019s personality profile` : "Your personality profile";
   const dateStr = state.completedAt.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   const out = [];
 
   /* Header */
   out.push(`<header class="res-head">
-    <h1 id="res-title" tabindex="-1">${who}</h1>
+    <h1 id="res-title" tabindex="-1">Your personality profile</h1>
     <p class="res-meta">Completed ${esc(dateStr)}${CONFIG.course ? ". " + esc(CONFIG.course) : ""}</p>
     <div class="actions">
       <button type="button" class="btn" id="dl">Download results (CSV)</button>
@@ -973,7 +1011,7 @@ function renderResults(){
       <div class="ov-pct"><span class="pct-num">${d.pct}<span class="ord">${ordSuffix(d.pct)}</span></span><span class="pct-suf">percentile</span></div>
     </div>`);
   });
-  out.push(`</div><p class="curve-key">Percentiles are estimates based on typical adult scores, not on your classmates. The dashed line marks the average.</p></section>`);
+  out.push(`</div><p class="curve-key">Percentiles are estimates that compare you with ${esc(NORMS.description)}. The dashed line marks the average.</p></section>`);
 
   /* Trait detail */
   out.push(`<section class="section" aria-labelledby="tr-h">
@@ -1089,28 +1127,34 @@ function renderResults(){
     const lab = sim >= 0.6 ? "Strong resemblance" : sim >= 0.35 ? "Moderate resemblance" : "Weak resemblance";
     return Object.assign({}, ty, { sim, lab });
   });
-  const best = types.reduce((a, b) => (b.sim > a.sim ? b : a));
+  // Only types with at least moderate resemblance are shown, closest first.
+  const matches = types.filter(ty => ty.sim >= 0.35).sort((a, b) => b.sim - a.sim);
   out.push(`<section class="section" aria-labelledby="ty-h">
     <h2 id="ty-h">Which research-based type do you resemble?</h2>
-    <p class="section-lead">Traits describe personality best, but when researchers sort people by their whole trait profile, three broad types keep reappearing in children and adults alike (Robins et al., 1996; Asendorpf et al., 2001). Most people resemble one somewhat and none perfectly.</p>
+    <p class="section-lead">Traits describe personality best, but when researchers sort people by their whole trait profile, three broad types keep reappearing in children and adults alike: resilient, overcontrolled, and undercontrolled (Robins et al., 1996; Asendorpf et al., 2001).</p>
     <div class="types">`);
-  types.forEach(ty => {
-    const closest = ty === best && best.sim >= 0.35;
-    out.push(`<div class="type-row${closest ? " closest" : ""}">
-      <div class="type-head"><h3>${ty.name}</h3><span class="type-tag">${closest ? "Your closest match. " : ""}${ty.lab}</span></div>
+  if (!matches.length){
+    out.push(`<p class="empty">Your profile doesn&rsquo;t closely resemble any of the three types. That&rsquo;s true of many people, since most profiles fall somewhere between them, and it&rsquo;s a reminder that your individual trait scores describe you better than any type label could.</p>`);
+  }
+  matches.forEach((ty, i) => {
+    const tag = (i === 0 ? (matches.length > 1 ? "Your closest match" : "Your match") : "Also similar") + ", " + ty.lab.toLowerCase();
+    out.push(`<div class="type-row${i === 0 ? " closest" : ""}">
+      <div class="type-head"><h3>${ty.name}</h3><span class="type-tag">${tag}</span></div>
       <div class="meter" aria-hidden="true"><div class="meter-fill" style="width:${Math.round(ty.sim * 100)}%"></div></div>
       <p>${ty.text}</p>
     </div>`);
   });
-  if (best.sim < 0.35){
-    out.push(`<p class="empty">You don&rsquo;t closely resemble any of the three types. That&rsquo;s true of many people, since most profiles fall somewhere between them.</p>`);
+  out.push(`</div>`);
+  if (matches.length){
+    out.push(`<p class="research">Type profiles here are approximations of the published prototypes, matched on the shape and strength of your five trait scores. Types you resemble only weakly aren&rsquo;t shown.</p>`);
   }
-  out.push(`</div><p class="research">Type profiles here are approximations of the published prototypes, matched on the shape and strength of your five trait scores.</p></section>`);
+  out.push(`</section>`);
 
   /* Caveats */
   out.push(`<section class="section caveats" aria-labelledby="cv-h">
     <h2 id="cv-h">Keep in mind</h2>
     <p><strong>These are estimates.</strong> Thirty statements give a reasonable snapshot of the five broad traits. Each facet rests on just two statements, so facet scores are rougher than trait scores.</p>
+    ${NORMS.peers ? "" : `<p><strong>You&rsquo;re being compared with adults of all ages.</strong> People in their late teens and early twenties tend to score a little lower on Conscientiousness and Agreeableness and a little higher on Neuroticism than older adults (Soto et al., 2011), and those traits typically shift in the other direction through young adulthood (Roberts et al., 2006). Compared only with people your own age, your Conscientiousness and Agreeableness percentiles would likely be a bit higher, and your Neuroticism percentile a bit lower.</p>`}
     <p><strong>No trait is good or bad.</strong> High and low scores on every trait come with advantages in some situations and costs in others.</p>
     <p><strong>Personality changes.</strong> Traits are fairly stable, but not fixed. On average, people become more conscientious and emotionally stable through young adulthood (Roberts, Walton & Viechtbauer, 2006), and people who set goals to change a trait tend to shift in that direction (Hudson & Fraley, 2015).</p>
     <p><strong>This isn&rsquo;t a diagnosis.</strong> No score here indicates a mental health condition. If stress, worry, or low mood are getting in the way of daily life, your campus counseling center is a good place to start.</p>
@@ -1119,7 +1163,8 @@ function renderResults(){
   /* About */
   out.push(`<section class="section" aria-labelledby="ab-h">
     <h2 id="ab-h">About this inventory</h2>
-    <p class="section-lead">The statements come from the International Personality Item Pool (Goldberg et al., 2006), a public-domain collection of personality items. They are arranged to mirror the 15-facet structure of the Big Five Inventory&ndash;2 (Soto &amp; John, 2017), the same structure used by its 30-item short form, the BFI-2-S. Each facet has two statements worded in opposite directions, which helps cancel out the tendency to agree with everything. Because this particular set of 30 statements has not been validated as a unit, treat it as a learning and self-reflection tool rather than a research instrument.</p>
+    <p class="section-lead">This inventory is modeled on FiveThirtyEight&rsquo;s 2019 personality quiz by Maggie Koerth-Baker and Julia Wolfe, which was built on the Big Five Inventory&ndash;2 developed by Christopher J. Soto and Oliver P. John (Soto &amp; John, 2017a). It follows the BFI-2&rsquo;s structure of 15 facets, the same structure used by its 30-item short form, the BFI-2-S (Soto &amp; John, 2017b). The statements themselves are drawn from or adapted from the International Personality Item Pool (Goldberg et al., 2006), a public-domain collection of personality items. Each facet has two statements worded in opposite directions, which helps cancel out the tendency to agree with everything. Because this particular set of 30 statements has not been validated as a unit, treat it as a learning and self-reflection tool rather than a research instrument.</p>
+    <p class="section-lead">For the full history of the original quiz, credits, the complete list of statements, and scoring details, see the <a href="${esc(readmeHref())}" target="_blank" rel="noopener">project README</a>.</p>
     <h3 style="font-size:1.15rem;margin:28px 0 10px">References</h3>
     <ul class="refs">${REFERENCES.map(x => `<li>${x}</li>`).join("")}</ul>
   </section>`);
@@ -1139,8 +1184,10 @@ function csvCell(v){
 }
 function downloadCSV(){
   const r = state.result;
-  const cols = ["name", "course", "completed"];
-  const vals = [state.name, CONFIG.course, state.completedAt.toISOString()];
+  const d = state.completedAt;
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const cols = ["response_id", "item_set", "course", "completed"];
+  const vals = [state.responseId, CONFIG.itemSet, CONFIG.course, date];
   TRAIT_ORDER.forEach(t => {
     const n = TRAITS[t].name.toLowerCase();
     cols.push(`${n}_score`, `${n}_percentile`);
@@ -1156,9 +1203,8 @@ function downloadCSV(){
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  const slug = (state.name || "results").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "results";
   a.href = url;
-  a.download = `big-five-${slug}.csv`;
+  a.download = `big-five-results-${state.responseId}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -1171,7 +1217,6 @@ if (CONFIG.course){ el.course.textContent = CONFIG.course; }
 $("hero-curve").innerHTML = heroSVG();
 buildScale();
 el.start.addEventListener("click", start);
-el.name.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); start(); } });
 el.back.addEventListener("click", goBack);
 el.brand.addEventListener("click", e => {
   e.preventDefault();
@@ -1180,7 +1225,6 @@ el.brand.addEventListener("click", e => {
 });
 
 if (location.hash === "#demo"){
-  state.name = "Demo";
   state.answers = state.answers.map(() => 1 + Math.floor(Math.random() * 5));
   finish();
 }
